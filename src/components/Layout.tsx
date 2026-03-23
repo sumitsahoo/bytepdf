@@ -8,6 +8,8 @@
 
 import type { ReactNode } from "react";
 
+import { colors } from "../config/theme.ts";
+
 interface LayoutProps {
   /** Content to render in the main area. */
   children: ReactNode;
@@ -49,14 +51,14 @@ export function Layout({ children, onHome, showBack }: LayoutProps) {
                   fill="white"
                   opacity="0.95"
                 />
-                <path d="M28 5v7a3 3 0 003 3h7l-10-10z" fill="#d5f2ec" />
+                <path d="M28 5v7a3 3 0 003 3h7l-10-10z" fill={colors.primary[100]} />
                 <text
                   x="23.5"
                   y="22"
                   fontFamily="ui-monospace,monospace"
                   fontWeight="700"
                   fontSize="6"
-                  fill="#3da396"
+                  fill={colors.primary[600]}
                   opacity="0.85"
                   textAnchor="middle"
                 >
@@ -68,7 +70,7 @@ export function Layout({ children, onHome, showBack }: LayoutProps) {
                   fontFamily="ui-monospace,monospace"
                   fontWeight="700"
                   fontSize="6"
-                  fill="#4db8a8"
+                  fill={colors.primary[500]}
                   opacity="0.65"
                   textAnchor="middle"
                 >
@@ -80,7 +82,7 @@ export function Layout({ children, onHome, showBack }: LayoutProps) {
                   fontFamily="ui-monospace,monospace"
                   fontWeight="700"
                   fontSize="6"
-                  fill="#3da396"
+                  fill={colors.primary[600]}
                   opacity="0.45"
                   textAnchor="middle"
                 >
@@ -90,7 +92,7 @@ export function Layout({ children, onHome, showBack }: LayoutProps) {
             </div>
             <span className="text-lg font-semibold text-slate-800">BytePDF</span>
           </button>
-          <div className="ml-auto flex items-center gap-1.5 text-xs bg-emerald-50 text-emerald-700 px-2.5 py-1 rounded-full">
+          <div className="ml-auto flex items-center gap-1.5 text-xs bg-primary-50 text-primary-700 px-2.5 py-1 rounded-full">
             <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
               <path
                 fillRule="evenodd"
