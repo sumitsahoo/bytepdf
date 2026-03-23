@@ -55,8 +55,8 @@ BytePDF offers **9 powerful PDF tools**, all running 100% client-side:
 
 ### Prerequisites
 
-- **Node.js** ≥ 18
-- **pnpm** ≥ 10
+- **Node.js** ≥ 24.x (LTS recommended)
+- **pnpm** ≥ 11.x
 
 ### Installation
 
