@@ -107,7 +107,7 @@ export function SignaturePad({ onSignature, width = 500, height = 200 }: Signatu
 
   return (
     <div className="space-y-2">
-      <div className="border border-slate-300 rounded-lg overflow-hidden bg-white">
+      <div className="border border-slate-300 dark:border-dark-border rounded-lg overflow-hidden bg-white dark:bg-dark-surface">
         <canvas
           ref={canvasRef}
           width={width}
@@ -123,7 +123,9 @@ export function SignaturePad({ onSignature, width = 500, height = 200 }: Signatu
         />
       </div>
       <div className="flex items-center justify-between">
-        <p className="text-xs text-slate-400">Draw your signature above</p>
+        <p className="text-xs text-slate-400 dark:text-dark-text-muted">
+          Draw your signature above
+        </p>
         {hasContent && (
           <button
             onClick={clear}

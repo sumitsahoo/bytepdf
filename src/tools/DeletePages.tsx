@@ -68,7 +68,7 @@ export default function DeletePages() {
       ) : (
         <>
           <div className="flex items-center justify-between">
-            <p className="text-sm text-slate-600">
+            <p className="text-sm text-slate-600 dark:text-dark-text-muted">
               <span className="font-medium">{file.name}</span> — {thumbnails.length} pages
               {selectedPages.size > 0 && (
                 <span className="text-red-500 ml-2">

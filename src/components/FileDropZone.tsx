@@ -63,8 +63,8 @@ export function FileDropZone({
       onClick={() => inputRef.current?.click()}
       className={`relative border-2 border-dashed rounded-xl p-10 text-center cursor-pointer transition-all duration-200 ${
         isDragOver
-          ? "border-primary-400 bg-primary-50/50"
-          : "border-slate-300 hover:border-primary-300 hover:bg-slate-50"
+          ? "border-primary-400 bg-primary-50/50 dark:bg-primary-900/30"
+          : "border-slate-300 dark:border-dark-border hover:border-primary-300 hover:bg-slate-50 dark:hover:bg-dark-surface"
       }`}
     >
       <input
@@ -76,7 +76,7 @@ export function FileDropZone({
         className="hidden"
       />
       <svg
-        className={`w-10 h-10 mx-auto mb-3 transition-colors ${isDragOver ? "text-primary-500" : "text-slate-400"}`}
+        className={`w-10 h-10 mx-auto mb-3 transition-colors ${isDragOver ? "text-primary-500" : "text-slate-400 dark:text-dark-text-muted"}`}
         fill="none"
         stroke="currentColor"
         viewBox="0 0 24 24"
@@ -88,8 +88,8 @@ export function FileDropZone({
           d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
         />
       </svg>
-      <p className="text-slate-600 font-medium">{label}</p>
-      {hint && <p className="text-sm text-slate-400 mt-1">{hint}</p>}
+      <p className="text-slate-600 dark:text-dark-text font-medium">{label}</p>
+      {hint && <p className="text-sm text-slate-400 dark:text-dark-text-muted mt-1">{hint}</p>}
     </div>
   );
 }

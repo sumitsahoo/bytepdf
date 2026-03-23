@@ -80,7 +80,9 @@ export default function ImagesToPdf() {
       {images.length > 0 && (
         <>
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">Page Size</label>
+            <label className="block text-sm font-medium text-slate-700 dark:text-dark-text mb-2">
+              Page Size
+            </label>
             <div className="flex gap-2">
               {(["a4", "letter", "fit"] as const).map((size) => (
                 <button
@@ -89,7 +91,7 @@ export default function ImagesToPdf() {
                   className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                     pageSize === size
                       ? "bg-primary-600 text-white"
-                      : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                      : "bg-slate-100 dark:bg-dark-surface-alt text-slate-700 dark:text-dark-text hover:bg-slate-200 dark:hover:bg-dark-border"
                   }`}
                 >
                   {size === "a4" ? "A4" : size === "letter" ? "Letter" : "Fit to Image"}
@@ -98,7 +100,7 @@ export default function ImagesToPdf() {
             </div>
           </div>
 
-          <div className="bg-white rounded-xl border border-slate-200 divide-y divide-slate-100">
+          <div className="bg-white dark:bg-dark-surface rounded-xl border border-slate-200 dark:border-dark-border divide-y divide-slate-100 dark:divide-dark-border">
             {images.map((item, index) => (
               <div key={item.id} className="flex items-center gap-3 px-4 py-3">
                 <span className="w-7 h-7 bg-primary-50 text-primary-600 rounded-full flex items-center justify-center text-sm font-medium shrink-0">
@@ -107,21 +109,25 @@ export default function ImagesToPdf() {
                 <img
                   src={item.preview}
                   alt={item.file.name}
-                  className="w-12 h-12 object-cover rounded border border-slate-200"
+                  className="w-12 h-12 object-cover rounded border border-slate-200 dark:border-dark-border"
                 />
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-slate-700 truncate">{item.file.name}</p>
-                  <p className="text-xs text-slate-400">{formatFileSize(item.file.size)}</p>
+                  <p className="text-sm font-medium text-slate-700 dark:text-dark-text truncate">
+                    {item.file.name}
+                  </p>
+                  <p className="text-xs text-slate-400 dark:text-dark-text-muted">
+                    {formatFileSize(item.file.size)}
+                  </p>
                 </div>
                 <div className="flex items-center gap-1">
                   <button
                     onClick={() => moveImage(index, -1)}
                     disabled={index === 0}
-                    className="p-1.5 rounded hover:bg-slate-100 disabled:opacity-30 transition-colors"
+                    className="p-1.5 rounded hover:bg-slate-100 dark:hover:bg-dark-surface-alt disabled:opacity-30 transition-colors"
                     aria-label="Move up"
                   >
                     <svg
-                      className="w-4 h-4 text-slate-500"
+                      className="w-4 h-4 text-slate-500 dark:text-dark-text-muted"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -137,11 +143,11 @@ export default function ImagesToPdf() {
                   <button
                     onClick={() => moveImage(index, 1)}
                     disabled={index === images.length - 1}
-                    className="p-1.5 rounded hover:bg-slate-100 disabled:opacity-30 transition-colors"
+                    className="p-1.5 rounded hover:bg-slate-100 dark:hover:bg-dark-surface-alt disabled:opacity-30 transition-colors"
                     aria-label="Move down"
                   >
                     <svg
-                      className="w-4 h-4 text-slate-500"
+                      className="w-4 h-4 text-slate-500 dark:text-dark-text-muted"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -160,7 +166,7 @@ export default function ImagesToPdf() {
                     aria-label="Remove"
                   >
                     <svg
-                      className="w-4 h-4 text-slate-400 hover:text-red-500"
+                      className="w-4 h-4 text-slate-400 dark:text-dark-text-muted hover:text-red-500"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"

@@ -82,13 +82,13 @@ export default function RotatePages() {
       ) : (
         <>
           <div className="flex items-center justify-between flex-wrap gap-3">
-            <p className="text-sm text-slate-600">
+            <p className="text-sm text-slate-600 dark:text-dark-text-muted">
               <span className="font-medium">{file.name}</span> — {thumbnails.length} pages
             </p>
             <div className="flex items-center gap-2">
               <button
                 onClick={() => rotateAll(90)}
-                className="text-sm px-3 py-1.5 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors"
+                className="text-sm px-3 py-1.5 bg-slate-100 dark:bg-dark-surface-alt dark:text-dark-text hover:bg-slate-200 dark:hover:bg-dark-border rounded-lg transition-colors"
               >
                 Rotate All 90° →
               </button>
@@ -117,7 +117,7 @@ export default function RotatePages() {
                   <div className="flex justify-center gap-1">
                     <button
                       onClick={() => rotatePage(i, -90)}
-                      className="p-1.5 rounded hover:bg-slate-100 text-slate-500 transition-colors"
+                      className="p-1.5 rounded hover:bg-slate-100 dark:hover:bg-dark-surface-alt text-slate-500 dark:text-dark-text-muted transition-colors"
                       title="Rotate 90° left"
                     >
                       <svg
@@ -136,7 +136,7 @@ export default function RotatePages() {
                     </button>
                     <button
                       onClick={() => rotatePage(i, 90)}
-                      className="p-1.5 rounded hover:bg-slate-100 text-slate-500 transition-colors"
+                      className="p-1.5 rounded hover:bg-slate-100 dark:hover:bg-dark-surface-alt text-slate-500 dark:text-dark-text-muted transition-colors"
                       title="Rotate 90° right"
                     >
                       <svg
@@ -155,7 +155,7 @@ export default function RotatePages() {
                     </button>
                     <button
                       onClick={() => rotatePage(i, 180)}
-                      className="p-1.5 rounded hover:bg-slate-100 text-slate-500 transition-colors"
+                      className="p-1.5 rounded hover:bg-slate-100 dark:hover:bg-dark-surface-alt text-slate-500 dark:text-dark-text-muted transition-colors"
                       title="Rotate 180°"
                     >
                       <svg

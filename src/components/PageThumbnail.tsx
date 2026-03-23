@@ -34,11 +34,11 @@ export function PageThumbnail({
       onClick={onClick}
       className={`relative group rounded-lg overflow-hidden border-2 transition-all cursor-pointer ${
         selected
-          ? "border-primary-500 ring-2 ring-primary-200"
-          : "border-slate-200 hover:border-slate-300"
+          ? "border-primary-500 ring-2 ring-primary-200 dark:ring-primary-800"
+          : "border-slate-200 dark:border-dark-border hover:border-slate-300 dark:hover:border-slate-600"
       }`}
     >
-      <div className="aspect-[3/4] bg-white flex items-center justify-center overflow-hidden">
+      <div className="aspect-[3/4] bg-white dark:bg-dark-surface flex items-center justify-center overflow-hidden">
         <img
           src={src}
           alt={`Page ${pageNumber}`}

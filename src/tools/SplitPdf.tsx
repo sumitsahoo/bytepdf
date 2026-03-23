@@ -97,7 +97,7 @@ export default function SplitPdf() {
       ) : (
         <>
           <div className="flex items-center justify-between">
-            <p className="text-sm text-slate-600">
+            <p className="text-sm text-slate-600 dark:text-dark-text-muted">
               <span className="font-medium">{file.name}</span> — {thumbnails.length} pages
             </p>
             <button
@@ -113,7 +113,7 @@ export default function SplitPdf() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1.5">
+            <label className="block text-sm font-medium text-slate-700 dark:text-dark-text mb-1.5">
               Page range (optional)
             </label>
             <input
@@ -121,9 +121,11 @@ export default function SplitPdf() {
               value={rangeInput}
               onChange={(e) => setRangeInput(e.target.value)}
               placeholder="e.g., 1-3, 5, 7-9"
-              className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-slate-300 dark:border-dark-border dark:bg-dark-surface dark:text-dark-text rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
             />
-            <p className="text-xs text-slate-400 mt-1">Or click pages below to select them</p>
+            <p className="text-xs text-slate-400 dark:text-dark-text-muted mt-1">
+              Or click pages below to select them
+            </p>
           </div>
 
           {loading ? (

@@ -53,8 +53,8 @@ function SortablePage({ id, src, pageNumber }: SortablePageProps) {
       {...listeners}
       className="cursor-grab active:cursor-grabbing"
     >
-      <div className="relative group rounded-lg overflow-hidden border-2 border-slate-200 hover:border-primary-300 transition-colors">
-        <div className="aspect-[3/4] bg-white flex items-center justify-center overflow-hidden">
+      <div className="relative group rounded-lg overflow-hidden border-2 border-slate-200 dark:border-dark-border hover:border-primary-300 dark:hover:border-primary-600 transition-colors">
+        <div className="aspect-[3/4] bg-white dark:bg-dark-surface flex items-center justify-center overflow-hidden">
           <img
             src={src}
             alt={`Page ${pageNumber}`}
@@ -139,7 +139,7 @@ export default function ReorderPages() {
       ) : (
         <>
           <div className="flex items-center justify-between">
-            <p className="text-sm text-slate-600">
+            <p className="text-sm text-slate-600 dark:text-dark-text-muted">
               <span className="font-medium">{file.name}</span> — {thumbnails.length} pages
             </p>
             <button

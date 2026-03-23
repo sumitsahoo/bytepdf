@@ -83,7 +83,7 @@ export default function AddSignature() {
       ) : (
         <>
           <div className="flex items-center justify-between">
-            <p className="text-sm text-slate-600">
+            <p className="text-sm text-slate-600 dark:text-dark-text-muted">
               <span className="font-medium">{file.name}</span> — {thumbnails.length} pages
             </p>
             <button
@@ -101,19 +101,21 @@ export default function AddSignature() {
           <div className="grid md:grid-cols-2 gap-6">
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
+                <label className="block text-sm font-medium text-slate-700 dark:text-dark-text mb-2">
                   Draw Your Signature
                 </label>
                 <SignaturePad onSignature={setSignatureDataUrl} />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                <label className="block text-sm font-medium text-slate-700 dark:text-dark-text mb-1.5">
                   Signature Size
                 </label>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="text-xs text-slate-500">Width: {sigSize.width}px</label>
+                    <label className="text-xs text-slate-500 dark:text-dark-text-muted">
+                      Width: {sigSize.width}px
+                    </label>
                     <input
                       type="range"
                       min={50}
@@ -124,7 +126,9 @@ export default function AddSignature() {
                     />
                   </div>
                   <div>
-                    <label className="text-xs text-slate-500">Height: {sigSize.height}px</label>
+                    <label className="text-xs text-slate-500 dark:text-dark-text-muted">
+                      Height: {sigSize.height}px
+                    </label>
                     <input
                       type="range"
                       min={20}
@@ -140,12 +144,12 @@ export default function AddSignature() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                <label className="block text-sm font-medium text-slate-700 dark:text-dark-text mb-1.5">
                   Position on Page
                 </label>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="text-xs text-slate-500">
+                    <label className="text-xs text-slate-500 dark:text-dark-text-muted">
                       Horizontal: {position.xPercent}%
                     </label>
                     <input
@@ -160,7 +164,9 @@ export default function AddSignature() {
                     />
                   </div>
                   <div>
-                    <label className="text-xs text-slate-500">Vertical: {position.yPercent}%</label>
+                    <label className="text-xs text-slate-500 dark:text-dark-text-muted">
+                      Vertical: {position.yPercent}%
+                    </label>
                     <input
                       type="range"
                       min={5}
@@ -177,7 +183,7 @@ export default function AddSignature() {
 
               {thumbnails.length > 1 && (
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-dark-text mb-1.5">
                     Select Page ({selectedPage + 1} of {thumbnails.length})
                   </label>
                   <input
@@ -193,15 +199,15 @@ export default function AddSignature() {
             </div>
 
             <div>
-              <p className="text-sm font-medium text-slate-700 mb-1.5">
+              <p className="text-sm font-medium text-slate-700 dark:text-dark-text mb-1.5">
                 Preview — Page {selectedPage + 1}
               </p>
               {loading ? (
-                <div className="aspect-3/4 bg-slate-100 rounded-lg flex items-center justify-center">
+                <div className="aspect-3/4 bg-slate-100 dark:bg-dark-surface-alt rounded-lg flex items-center justify-center">
                   <div className="w-8 h-8 border-3 border-primary-200 border-t-primary-600 rounded-full animate-spin" />
                 </div>
               ) : thumbnails[selectedPage] ? (
-                <div className="relative aspect-3/4 bg-white rounded-lg border border-slate-200 overflow-hidden">
+                <div className="relative aspect-3/4 bg-white dark:bg-dark-surface rounded-lg border border-slate-200 dark:border-dark-border overflow-hidden">
                   <img
                     src={thumbnails[selectedPage]}
                     alt={`Page ${selectedPage + 1}`}

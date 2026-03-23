@@ -117,8 +117,12 @@ export function App() {
       {activeTool && ToolComponent ? (
         <div>
           <div className="mb-6">
-            <h1 className="text-2xl font-bold text-slate-800">{activeMeta?.title}</h1>
-            <p className="text-slate-500 mt-1">{activeMeta?.description}</p>
+            <h1 className="text-2xl font-bold text-slate-800 dark:text-dark-text">
+              {activeMeta?.title}
+            </h1>
+            <p className="text-slate-500 dark:text-dark-text-muted mt-1">
+              {activeMeta?.description}
+            </p>
           </div>
           <Suspense fallback={<LoadingSpinner />}>
             <ToolComponent />
@@ -127,10 +131,10 @@ export function App() {
       ) : (
         <div>
           <div className="text-center mb-10">
-            <h1 className="text-3xl sm:text-4xl font-bold text-slate-800 mb-3">
+            <h1 className="text-3xl sm:text-4xl font-bold text-slate-800 dark:text-dark-text mb-3">
               PDF Tools That Respect Your Privacy
             </h1>
-            <p className="text-lg text-slate-500 max-w-2xl mx-auto">
+            <p className="text-lg text-slate-500 dark:text-dark-text-muted max-w-2xl mx-auto">
               Edit, merge, split, and compress PDFs entirely in your browser. Your files never leave
               your device.
             </p>

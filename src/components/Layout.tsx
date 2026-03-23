@@ -21,13 +21,13 @@ interface LayoutProps {
 
 export function Layout({ children, onHome, showBack }: LayoutProps) {
   return (
-    <div className="min-h-screen bg-linear-to-br from-slate-50 to-primary-50/30 flex flex-col">
-      <header className="bg-white/80 backdrop-blur-sm border-b border-slate-200 sticky top-0 z-50">
+    <div className="min-h-screen bg-linear-to-br from-slate-50 to-primary-50/30 dark:from-dark-bg dark:to-dark-bg flex flex-col">
+      <header className="bg-white/80 dark:bg-dark-surface/80 backdrop-blur-sm border-b border-slate-200 dark:border-dark-border sticky top-0 z-50">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 flex items-center gap-3">
           {showBack && (
             <button
               onClick={onHome}
-              className="p-2 -ml-2 rounded-lg hover:bg-slate-100 transition-colors text-slate-600"
+              className="p-2 -ml-2 rounded-lg hover:bg-slate-100 dark:hover:bg-dark-surface-alt transition-colors text-slate-600 dark:text-dark-text-muted"
               aria-label="Back to home"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -90,9 +90,11 @@ export function Layout({ children, onHome, showBack }: LayoutProps) {
                 </text>
               </svg>
             </div>
-            <span className="text-lg font-semibold text-slate-800">BytePDF</span>
+            <span className="text-lg font-semibold text-slate-800 dark:text-dark-text">
+              BytePDF
+            </span>
           </button>
-          <div className="ml-auto flex items-center gap-1.5 text-xs bg-primary-50 text-primary-700 px-2.5 py-1 rounded-full">
+          <div className="ml-auto flex items-center gap-1.5 text-xs bg-primary-50 dark:bg-primary-900/40 text-primary-700 dark:text-primary-300 px-2.5 py-1 rounded-full">
             <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
               <path
                 fillRule="evenodd"
@@ -107,8 +109,8 @@ export function Layout({ children, onHome, showBack }: LayoutProps) {
 
       <main className="flex-1 max-w-6xl mx-auto px-4 sm:px-6 py-8 w-full">{children}</main>
 
-      <footer className="border-t border-slate-200 bg-white/50">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 text-center text-sm text-slate-400">
+      <footer className="border-t border-slate-200 dark:border-dark-border bg-white/50 dark:bg-dark-surface/50">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 text-center text-sm text-slate-400 dark:text-dark-text-muted">
           All processing happens in your browser. No files are uploaded to any server.
         </div>
       </footer>

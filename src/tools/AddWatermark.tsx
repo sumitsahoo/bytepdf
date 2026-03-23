@@ -70,7 +70,7 @@ export default function AddWatermark() {
       ) : (
         <>
           <div className="flex items-center justify-between">
-            <p className="text-sm text-slate-600">
+            <p className="text-sm text-slate-600 dark:text-dark-text-muted">
               <span className="font-medium">{file.name}</span>
             </p>
             <button
@@ -88,20 +88,20 @@ export default function AddWatermark() {
           <div className="grid md:grid-cols-2 gap-6">
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                <label className="block text-sm font-medium text-slate-700 dark:text-dark-text mb-1.5">
                   Watermark Text
                 </label>
                 <input
                   type="text"
                   value={options.text}
                   onChange={(e) => setOptions((o) => ({ ...o, text: e.target.value }))}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-slate-300 dark:border-dark-border dark:bg-dark-surface dark:text-dark-text rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                   placeholder="Enter watermark text"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                <label className="block text-sm font-medium text-slate-700 dark:text-dark-text mb-1.5">
                   Font Size: {options.fontSize}px
                 </label>
                 <input
@@ -115,7 +115,7 @@ export default function AddWatermark() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                <label className="block text-sm font-medium text-slate-700 dark:text-dark-text mb-1.5">
                   Opacity: {Math.round(options.opacity * 100)}%
                 </label>
                 <input
@@ -131,7 +131,7 @@ export default function AddWatermark() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                <label className="block text-sm font-medium text-slate-700 dark:text-dark-text mb-1.5">
                   Rotation: {options.rotation}°
                 </label>
                 <input
@@ -145,7 +145,9 @@ export default function AddWatermark() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1.5">Color</label>
+                <label className="block text-sm font-medium text-slate-700 dark:text-dark-text mb-1.5">
+                  Color
+                </label>
                 <div className="flex gap-2">
                   {[
                     { label: "Gray", color: { r: 128, g: 128, b: 128 } },
@@ -159,7 +161,7 @@ export default function AddWatermark() {
                       className={`px-3 py-1.5 rounded-lg text-sm transition-colors ${
                         options.color.r === preset.color.r && options.color.g === preset.color.g
                           ? "bg-primary-600 text-white"
-                          : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                          : "bg-slate-100 dark:bg-dark-surface-alt text-slate-700 dark:text-dark-text hover:bg-slate-200 dark:hover:bg-dark-border"
                       }`}
                     >
                       {preset.label}
@@ -170,13 +172,15 @@ export default function AddWatermark() {
             </div>
 
             <div>
-              <p className="text-sm font-medium text-slate-700 mb-1.5">Preview (page 1)</p>
+              <p className="text-sm font-medium text-slate-700 dark:text-dark-text mb-1.5">
+                Preview (page 1)
+              </p>
               {loading ? (
-                <div className="aspect-[3/4] bg-slate-100 rounded-lg flex items-center justify-center">
+                <div className="aspect-[3/4] bg-slate-100 dark:bg-dark-surface-alt rounded-lg flex items-center justify-center">
                   <div className="w-8 h-8 border-3 border-primary-200 border-t-primary-600 rounded-full animate-spin" />
                 </div>
               ) : preview ? (
-                <div className="relative aspect-[3/4] bg-white rounded-lg border border-slate-200 overflow-hidden">
+                <div className="relative aspect-[3/4] bg-white dark:bg-dark-surface rounded-lg border border-slate-200 dark:border-dark-border overflow-hidden">
                   <img src={preview} alt="Preview" className="w-full h-full object-contain" />
                   <div
                     className="absolute inset-0 flex items-center justify-center pointer-events-none"

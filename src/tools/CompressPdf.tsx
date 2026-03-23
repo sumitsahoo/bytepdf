@@ -65,7 +65,7 @@ export default function CompressPdf() {
       ) : (
         <>
           <div className="flex items-center justify-between">
-            <p className="text-sm text-slate-600">
+            <p className="text-sm text-slate-600 dark:text-dark-text-muted">
               <span className="font-medium">{file.name}</span> — {formatFileSize(file.size)}
             </p>
             <button
@@ -82,7 +82,7 @@ export default function CompressPdf() {
           {!result ? (
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
+                <label className="block text-sm font-medium text-slate-700 dark:text-dark-text mb-2">
                   Compression Level
                 </label>
                 <div className="grid grid-cols-3 gap-3">
@@ -108,16 +108,18 @@ export default function CompressPdf() {
                       onClick={() => setQuality(opt.value)}
                       className={`p-3 rounded-xl border-2 text-left transition-all ${
                         quality === opt.value
-                          ? "border-primary-500 bg-primary-50"
-                          : "border-slate-200 hover:border-slate-300"
+                          ? "border-primary-500 bg-primary-50 dark:bg-primary-900/40"
+                          : "border-slate-200 dark:border-dark-border hover:border-slate-300 dark:hover:border-slate-600"
                       }`}
                     >
                       <p
-                        className={`text-sm font-semibold ${quality === opt.value ? "text-primary-700" : "text-slate-700"}`}
+                        className={`text-sm font-semibold ${quality === opt.value ? "text-primary-700 dark:text-primary-300" : "text-slate-700 dark:text-dark-text"}`}
                       >
                         {opt.label}
                       </p>
-                      <p className="text-xs text-slate-500 mt-0.5">{opt.desc}</p>
+                      <p className="text-xs text-slate-500 dark:text-dark-text-muted mt-0.5">
+                        {opt.desc}
+                      </p>
                     </button>
                   ))}
                 </div>
@@ -133,31 +135,31 @@ export default function CompressPdf() {
             </div>
           ) : (
             <div className="space-y-4">
-              <div className="bg-white rounded-xl border border-slate-200 p-6">
+              <div className="bg-white dark:bg-dark-surface rounded-xl border border-slate-200 dark:border-dark-border p-6">
                 <div className="grid grid-cols-3 gap-4 text-center">
                   <div>
-                    <p className="text-sm text-slate-500">Original</p>
-                    <p className="text-xl font-bold text-slate-800">
+                    <p className="text-sm text-slate-500 dark:text-dark-text-muted">Original</p>
+                    <p className="text-xl font-bold text-slate-800 dark:text-dark-text">
                       {formatFileSize(result.original)}
                     </p>
                   </div>
                   <div>
-                    <p className="text-sm text-slate-500">Compressed</p>
+                    <p className="text-sm text-slate-500 dark:text-dark-text-muted">Compressed</p>
                     <p className="text-xl font-bold text-emerald-600">
                       {formatFileSize(result.compressed)}
                     </p>
                   </div>
                   <div>
-                    <p className="text-sm text-slate-500">Saved</p>
+                    <p className="text-sm text-slate-500 dark:text-dark-text-muted">Saved</p>
                     <p
-                      className={`text-xl font-bold ${savings > 0 ? "text-emerald-600" : "text-slate-500"}`}
+                      className={`text-xl font-bold ${savings > 0 ? "text-emerald-600" : "text-slate-500 dark:text-dark-text-muted"}`}
                     >
                       {savings}%
                     </p>
                   </div>
                 </div>
                 {savings === 0 && (
-                  <p className="text-sm text-slate-500 text-center mt-4">
+                  <p className="text-sm text-slate-500 dark:text-dark-text-muted text-center mt-4">
                     This file is already well optimized. The output is about the same size.
                   </p>
                 )}
