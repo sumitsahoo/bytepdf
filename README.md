@@ -161,7 +161,7 @@ Contributions are welcome! Here's how to get started:
 
 ## 📄 License
 
-This project is licensed under the terms specified in the [LICENSE](LICENSE) file.
+This project is licensed under the **MIT License** — feel free to use it for both personal and commercial purposes. See the [LICENSE](LICENSE) file for details.
 
 ---
 
