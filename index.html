@@ -6,19 +6,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="color-scheme" content="light dark" />
     <title>BytePDF</title>
-    <script>
-      // Sync .dark class with OS preference (auto dark mode)
-      (function () {
-        var mq = window.matchMedia("(prefers-color-scheme: dark)");
-        function apply(dark) {
-          document.documentElement.classList.toggle("dark", dark);
-        }
-        apply(mq.matches);
-        mq.addEventListener("change", function (e) {
-          apply(e.matches);
-        });
-      })();
-    </script>
   </head>
   <body>
     <div id="app"></div>

@@ -35,8 +35,6 @@
   --color-dark-text-muted: #94a3b8;
 }
 
-@custom-variant dark (&:where(.dark, .dark *));
-
 html {
   scroll-behavior: smooth;
 }
