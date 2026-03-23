@@ -60,7 +60,7 @@ export default function MergePdf() {
         <div className="bg-white rounded-xl border border-slate-200 divide-y divide-slate-100">
           {files.map((item, index) => (
             <div key={item.id} className="flex items-center gap-3 px-4 py-3">
-              <span className="w-7 h-7 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center text-sm font-medium shrink-0">
+              <span className="w-7 h-7 bg-primary-50 text-primary-600 rounded-full flex items-center justify-center text-sm font-medium shrink-0">
                 {index + 1}
               </span>
               <div className="flex-1 min-w-0">
@@ -137,7 +137,7 @@ export default function MergePdf() {
         <button
           onClick={handleMerge}
           disabled={processing}
-          className="w-full bg-indigo-600 text-white py-3 px-6 rounded-xl font-medium hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          className="w-full bg-primary-600 text-white py-3 px-6 rounded-xl font-medium hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
           {processing ? "Merging..." : `Merge ${files.length} Files`}
         </button>

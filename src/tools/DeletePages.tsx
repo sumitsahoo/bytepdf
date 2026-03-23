@@ -74,7 +74,7 @@ export default function DeletePages() {
                 setThumbnails([]);
                 setSelectedPages(new Set());
               }}
-              className="text-sm text-indigo-600 hover:text-indigo-700"
+              className="text-sm text-primary-600 hover:text-primary-700"
             >
               Change file
             </button>
@@ -82,7 +82,7 @@ export default function DeletePages() {
 
           {loading ? (
             <div className="flex items-center justify-center py-12">
-              <div className="w-8 h-8 border-3 border-indigo-200 border-t-indigo-600 rounded-full animate-spin" />
+              <div className="w-8 h-8 border-3 border-primary-200 border-t-primary-600 rounded-full animate-spin" />
             </div>
           ) : (
             <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">

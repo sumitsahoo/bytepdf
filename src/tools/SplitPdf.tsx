@@ -97,7 +97,7 @@ export default function SplitPdf() {
                 setThumbnails([]);
                 setSelectedPages(new Set());
               }}
-              className="text-sm text-indigo-600 hover:text-indigo-700"
+              className="text-sm text-primary-600 hover:text-primary-700"
             >
               Change file
             </button>
@@ -112,14 +112,14 @@ export default function SplitPdf() {
               value={rangeInput}
               onChange={(e) => setRangeInput(e.target.value)}
               placeholder="e.g., 1-3, 5, 7-9"
-              className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
             />
             <p className="text-xs text-slate-400 mt-1">Or click pages below to select them</p>
           </div>
 
           {loading ? (
             <div className="flex items-center justify-center py-12">
-              <div className="w-8 h-8 border-3 border-indigo-200 border-t-indigo-600 rounded-full animate-spin" />
+              <div className="w-8 h-8 border-3 border-primary-200 border-t-primary-600 rounded-full animate-spin" />
             </div>
           ) : (
             <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
@@ -139,7 +139,7 @@ export default function SplitPdf() {
             <button
               onClick={handleSplit}
               disabled={processing}
-              className="w-full bg-indigo-600 text-white py-3 px-6 rounded-xl font-medium hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="w-full bg-primary-600 text-white py-3 px-6 rounded-xl font-medium hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {processing ? "Extracting..." : "Extract Selected Pages"}
             </button>

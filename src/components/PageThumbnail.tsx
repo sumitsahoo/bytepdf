@@ -20,7 +20,7 @@ export function PageThumbnail({
       onClick={onClick}
       className={`relative group rounded-lg overflow-hidden border-2 transition-all cursor-pointer ${
         selected
-          ? "border-indigo-500 ring-2 ring-indigo-200"
+          ? "border-primary-500 ring-2 ring-primary-200"
           : "border-slate-200 hover:border-slate-300"
       }`}
     >

@@ -69,7 +69,7 @@ export default function AddWatermark() {
                 setPreview(null);
                 fileDataRef.current = null;
               }}
-              className="text-sm text-indigo-600 hover:text-indigo-700"
+              className="text-sm text-primary-600 hover:text-primary-700"
             >
               Change file
             </button>
@@ -85,7 +85,7 @@ export default function AddWatermark() {
                   type="text"
                   value={options.text}
                   onChange={(e) => setOptions((o) => ({ ...o, text: e.target.value }))}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                   placeholder="Enter watermark text"
                 />
               </div>
@@ -100,7 +100,7 @@ export default function AddWatermark() {
                   max={120}
                   value={options.fontSize}
                   onChange={(e) => setOptions((o) => ({ ...o, fontSize: Number(e.target.value) }))}
-                  className="w-full accent-indigo-600"
+                  className="w-full accent-primary-600"
                 />
               </div>
 
@@ -116,7 +116,7 @@ export default function AddWatermark() {
                   onChange={(e) =>
                     setOptions((o) => ({ ...o, opacity: Number(e.target.value) / 100 }))
                   }
-                  className="w-full accent-indigo-600"
+                  className="w-full accent-primary-600"
                 />
               </div>
 
@@ -130,7 +130,7 @@ export default function AddWatermark() {
                   max={90}
                   value={options.rotation}
                   onChange={(e) => setOptions((o) => ({ ...o, rotation: Number(e.target.value) }))}
-                  className="w-full accent-indigo-600"
+                  className="w-full accent-primary-600"
                 />
               </div>
 
@@ -148,7 +148,7 @@ export default function AddWatermark() {
                       onClick={() => setOptions((o) => ({ ...o, color: preset.color }))}
                       className={`px-3 py-1.5 rounded-lg text-sm transition-colors ${
                         options.color.r === preset.color.r && options.color.g === preset.color.g
-                          ? "bg-indigo-600 text-white"
+                          ? "bg-primary-600 text-white"
                           : "bg-slate-100 text-slate-700 hover:bg-slate-200"
                       }`}
                     >
@@ -163,7 +163,7 @@ export default function AddWatermark() {
               <p className="text-sm font-medium text-slate-700 mb-1.5">Preview (page 1)</p>
               {loading ? (
                 <div className="aspect-[3/4] bg-slate-100 rounded-lg flex items-center justify-center">
-                  <div className="w-8 h-8 border-3 border-indigo-200 border-t-indigo-600 rounded-full animate-spin" />
+                  <div className="w-8 h-8 border-3 border-primary-200 border-t-primary-600 rounded-full animate-spin" />
                 </div>
               ) : preview ? (
                 <div className="relative aspect-[3/4] bg-white rounded-lg border border-slate-200 overflow-hidden">
@@ -193,7 +193,7 @@ export default function AddWatermark() {
           <button
             onClick={handleApply}
             disabled={processing || !options.text.trim()}
-            className="w-full bg-indigo-600 text-white py-3 px-6 rounded-xl font-medium hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="w-full bg-primary-600 text-white py-3 px-6 rounded-xl font-medium hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             {processing ? "Applying..." : "Apply Watermark & Download"}
           </button>

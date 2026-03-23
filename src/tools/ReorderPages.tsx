@@ -44,7 +44,7 @@ function SortablePage({ id, src, pageNumber }: SortablePageProps) {
       {...listeners}
       className="cursor-grab active:cursor-grabbing"
     >
-      <div className="relative group rounded-lg overflow-hidden border-2 border-slate-200 hover:border-indigo-300 transition-colors">
+      <div className="relative group rounded-lg overflow-hidden border-2 border-slate-200 hover:border-primary-300 transition-colors">
         <div className="aspect-[3/4] bg-white flex items-center justify-center overflow-hidden">
           <img
             src={src}
@@ -56,7 +56,7 @@ function SortablePage({ id, src, pageNumber }: SortablePageProps) {
         <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/50 to-transparent px-2 py-1.5">
           <span className="text-xs text-white font-medium">Page {pageNumber}</span>
         </div>
-        <div className="absolute top-1 right-1 bg-indigo-600 text-white text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center shadow">
+        <div className="absolute top-1 right-1 bg-primary-600 text-white text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center shadow">
           {pageNumber}
         </div>
       </div>
@@ -139,7 +139,7 @@ export default function ReorderPages() {
                 setThumbnails([]);
                 setOrder([]);
               }}
-              className="text-sm text-indigo-600 hover:text-indigo-700"
+              className="text-sm text-primary-600 hover:text-primary-700"
             >
               Change file
             </button>
@@ -147,7 +147,7 @@ export default function ReorderPages() {
 
           {loading ? (
             <div className="flex items-center justify-center py-12">
-              <div className="w-8 h-8 border-3 border-indigo-200 border-t-indigo-600 rounded-full animate-spin" />
+              <div className="w-8 h-8 border-3 border-primary-200 border-t-primary-600 rounded-full animate-spin" />
             </div>
           ) : (
             <DndContext
@@ -177,7 +177,7 @@ export default function ReorderPages() {
             <button
               onClick={handleApply}
               disabled={processing}
-              className="w-full bg-indigo-600 text-white py-3 px-6 rounded-xl font-medium hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="w-full bg-primary-600 text-white py-3 px-6 rounded-xl font-medium hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {processing ? "Reordering..." : "Apply New Order & Download"}
             </button>

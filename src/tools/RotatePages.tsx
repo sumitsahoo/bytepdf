@@ -89,7 +89,7 @@ export default function RotatePages() {
                   setThumbnails([]);
                   setRotations(new Map());
                 }}
-                className="text-sm text-indigo-600 hover:text-indigo-700"
+                className="text-sm text-primary-600 hover:text-primary-700"
               >
                 Change file
               </button>
@@ -98,7 +98,7 @@ export default function RotatePages() {
 
           {loading ? (
             <div className="flex items-center justify-center py-12">
-              <div className="w-8 h-8 border-3 border-indigo-200 border-t-indigo-600 rounded-full animate-spin" />
+              <div className="w-8 h-8 border-3 border-primary-200 border-t-primary-600 rounded-full animate-spin" />
             </div>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
@@ -173,7 +173,7 @@ export default function RotatePages() {
             <button
               onClick={handleApply}
               disabled={processing}
-              className="w-full bg-indigo-600 text-white py-3 px-6 rounded-xl font-medium hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="w-full bg-primary-600 text-white py-3 px-6 rounded-xl font-medium hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {processing ? "Applying..." : "Apply Rotations & Download"}
             </button>

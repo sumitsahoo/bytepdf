@@ -78,7 +78,7 @@ export default function AddSignature() {
                 setThumbnails([]);
                 setSignatureDataUrl("");
               }}
-              className="text-sm text-indigo-600 hover:text-indigo-700"
+              className="text-sm text-primary-600 hover:text-primary-700"
             >
               Change file
             </button>
@@ -106,7 +106,7 @@ export default function AddSignature() {
                       max={400}
                       value={sigSize.width}
                       onChange={(e) => setSigSize((s) => ({ ...s, width: Number(e.target.value) }))}
-                      className="w-full accent-indigo-600"
+                      className="w-full accent-primary-600"
                     />
                   </div>
                   <div>
@@ -119,7 +119,7 @@ export default function AddSignature() {
                       onChange={(e) =>
                         setSigSize((s) => ({ ...s, height: Number(e.target.value) }))
                       }
-                      className="w-full accent-indigo-600"
+                      className="w-full accent-primary-600"
                     />
                   </div>
                 </div>
@@ -142,7 +142,7 @@ export default function AddSignature() {
                       onChange={(e) =>
                         setPosition((p) => ({ ...p, xPercent: Number(e.target.value) }))
                       }
-                      className="w-full accent-indigo-600"
+                      className="w-full accent-primary-600"
                     />
                   </div>
                   <div>
@@ -155,7 +155,7 @@ export default function AddSignature() {
                       onChange={(e) =>
                         setPosition((p) => ({ ...p, yPercent: Number(e.target.value) }))
                       }
-                      className="w-full accent-indigo-600"
+                      className="w-full accent-primary-600"
                     />
                   </div>
                 </div>
@@ -172,7 +172,7 @@ export default function AddSignature() {
                     max={thumbnails.length - 1}
                     value={selectedPage}
                     onChange={(e) => setSelectedPage(Number(e.target.value))}
-                    className="w-full accent-indigo-600"
+                    className="w-full accent-primary-600"
                   />
                 </div>
               )}
@@ -184,7 +184,7 @@ export default function AddSignature() {
               </p>
               {loading ? (
                 <div className="aspect-3/4 bg-slate-100 rounded-lg flex items-center justify-center">
-                  <div className="w-8 h-8 border-3 border-indigo-200 border-t-indigo-600 rounded-full animate-spin" />
+                  <div className="w-8 h-8 border-3 border-primary-200 border-t-primary-600 rounded-full animate-spin" />
                 </div>
               ) : thumbnails[selectedPage] ? (
                 <div className="relative aspect-3/4 bg-white rounded-lg border border-slate-200 overflow-hidden">
@@ -195,7 +195,7 @@ export default function AddSignature() {
                   />
                   {signatureDataUrl && (
                     <div
-                      className="absolute pointer-events-none border-2 border-dashed border-indigo-400 rounded"
+                      className="absolute pointer-events-none border-2 border-dashed border-primary-400 rounded"
                       style={{
                         left: `${position.xPercent}%`,
                         bottom: `${position.yPercent}%`,
@@ -219,7 +219,7 @@ export default function AddSignature() {
           <button
             onClick={handleApply}
             disabled={processing || !signatureDataUrl}
-            className="w-full bg-indigo-600 text-white py-3 px-6 rounded-xl font-medium hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="w-full bg-primary-600 text-white py-3 px-6 rounded-xl font-medium hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             {processing ? "Applying..." : "Apply Signature & Download"}
           </button>

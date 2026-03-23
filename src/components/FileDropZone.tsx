@@ -49,8 +49,8 @@ export function FileDropZone({
       onClick={() => inputRef.current?.click()}
       className={`relative border-2 border-dashed rounded-xl p-10 text-center cursor-pointer transition-all duration-200 ${
         isDragOver
-          ? "border-indigo-400 bg-indigo-50/50"
-          : "border-slate-300 hover:border-indigo-300 hover:bg-slate-50"
+          ? "border-primary-400 bg-primary-50/50"
+          : "border-slate-300 hover:border-primary-300 hover:bg-slate-50"
       }`}
     >
       <input
@@ -62,7 +62,7 @@ export function FileDropZone({
         className="hidden"
       />
       <svg
-        className={`w-10 h-10 mx-auto mb-3 transition-colors ${isDragOver ? "text-indigo-500" : "text-slate-400"}`}
+        className={`w-10 h-10 mx-auto mb-3 transition-colors ${isDragOver ? "text-primary-500" : "text-slate-400"}`}
         fill="none"
         stroke="currentColor"
         viewBox="0 0 24 24"

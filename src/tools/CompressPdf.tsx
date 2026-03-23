@@ -65,7 +65,7 @@ export default function CompressPdf() {
                 setFile(null);
                 setResult(null);
               }}
-              className="text-sm text-indigo-600 hover:text-indigo-700"
+              className="text-sm text-primary-600 hover:text-primary-700"
             >
               Change file
             </button>
@@ -100,12 +100,12 @@ export default function CompressPdf() {
                       onClick={() => setQuality(opt.value)}
                       className={`p-3 rounded-xl border-2 text-left transition-all ${
                         quality === opt.value
-                          ? "border-indigo-500 bg-indigo-50"
+                          ? "border-primary-500 bg-primary-50"
                           : "border-slate-200 hover:border-slate-300"
                       }`}
                     >
                       <p
-                        className={`text-sm font-semibold ${quality === opt.value ? "text-indigo-700" : "text-slate-700"}`}
+                        className={`text-sm font-semibold ${quality === opt.value ? "text-primary-700" : "text-slate-700"}`}
                       >
                         {opt.label}
                       </p>
@@ -118,7 +118,7 @@ export default function CompressPdf() {
               <button
                 onClick={handleCompress}
                 disabled={processing}
-                className="w-full bg-indigo-600 text-white py-3 px-6 rounded-xl font-medium hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="w-full bg-primary-600 text-white py-3 px-6 rounded-xl font-medium hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 {processing ? "Compressing... (this may take a moment)" : "Compress PDF"}
               </button>
@@ -157,7 +157,7 @@ export default function CompressPdf() {
 
               <button
                 onClick={handleDownload}
-                className="w-full bg-indigo-600 text-white py-3 px-6 rounded-xl font-medium hover:bg-indigo-700 transition-colors"
+                className="w-full bg-primary-600 text-white py-3 px-6 rounded-xl font-medium hover:bg-primary-700 transition-colors"
               >
                 Download Compressed PDF
               </button>

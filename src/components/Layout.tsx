@@ -8,7 +8,7 @@ interface LayoutProps {
 
 export function Layout({ children, onHome, showBack }: LayoutProps) {
   return (
-    <div className="min-h-screen bg-linear-to-br from-slate-50 to-indigo-50/30 flex flex-col">
+    <div className="min-h-screen bg-linear-to-br from-slate-50 to-primary-50/30 flex flex-col">
       <header className="bg-white/80 backdrop-blur-sm border-b border-slate-200 sticky top-0 z-50">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 flex items-center gap-3">
           {showBack && (
@@ -31,44 +31,47 @@ export function Layout({ children, onHome, showBack }: LayoutProps) {
             onClick={onHome}
             className="flex items-center gap-2.5 hover:opacity-80 transition-opacity"
           >
-            <div className="w-8 h-8 bg-linear-to-br from-indigo-500 to-violet-600 rounded-lg flex items-center justify-center shadow-sm">
+            <div className="w-8 h-8 bg-linear-to-br from-primary-400 to-accent rounded-lg flex items-center justify-center shadow-sm">
               <svg className="w-5 h-5" viewBox="0 0 48 48" fill="none">
                 <path
                   d="M13 7h15l9 9v24a3 3 0 01-3 3H13a3 3 0 01-3-3V10a3 3 0 013-3z"
                   fill="white"
                   opacity="0.95"
                 />
-                <path d="M28 7v6a3 3 0 003 3h6l-9-9z" fill="#e0e7ff" />
+                <path d="M28 7v6a3 3 0 003 3h6l-9-9z" fill="#d5f2ec" />
                 <text
-                  x="14"
-                  y="23"
+                  x="20.5"
+                  y="22"
                   fontFamily="ui-monospace,monospace"
                   fontWeight="700"
                   fontSize="5.5"
-                  fill="#6366f1"
+                  fill="#3da396"
                   opacity="0.85"
+                  textAnchor="middle"
                 >
                   1 0 1 1
                 </text>
                 <text
-                  x="14"
-                  y="29.5"
+                  x="20.5"
+                  y="28.5"
                   fontFamily="ui-monospace,monospace"
                   fontWeight="700"
                   fontSize="5.5"
-                  fill="#8b5cf6"
+                  fill="#4db8a8"
                   opacity="0.65"
+                  textAnchor="middle"
                 >
                   0 1 0 0
                 </text>
                 <text
-                  x="14"
-                  y="36"
+                  x="20.5"
+                  y="35"
                   fontFamily="ui-monospace,monospace"
                   fontWeight="700"
                   fontSize="5.5"
-                  fill="#6366f1"
+                  fill="#3da396"
                   opacity="0.45"
+                  textAnchor="middle"
                 >
                   1 1 0 1
                 </text>
