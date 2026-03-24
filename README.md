@@ -1,12 +1,17 @@
-# 📄 BytePDF
+<div align="center">
 
-**PDF Tools That Respect Your Privacy**
-
-A fast, modern, and privacy-focused PDF toolkit that runs entirely in your browser. No uploads, no servers, no tracking — your files never leave your device.
+  <h1>📄 BytePDF</h1>
+  <p>A fast, modern, and privacy-focused PDF toolkit that runs entirely in your browser. No uploads, no servers, no tracking — your files never leave your device.
 
 🔗 **Live Demo**: [https://sumitsahoo.github.io/bytepdf/](https://sumitsahoo.github.io/bytepdf/)
 
----
+  </p>
+
+![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/sumitsahoo/bytepdf/deploy.yml)
+![GitHub deployments](https://img.shields.io/github/deployments/sumitsahoo/bytepdf/github-pages)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+</div>
 
 ## ✨ Features
 
@@ -24,16 +29,12 @@ BytePDF offers **9 powerful PDF tools**, all running 100% client-side:
 | 💧 **Add Watermark** | Overlay custom text watermarks with configurable font size, color, opacity, and rotation |
 | ✍️ **Add Signature** | Draw a signature on a canvas and place it on any page with adjustable size and position  |
 
----
-
 ## 🔒 Privacy First
 
 - 🚫 **No file uploads** — everything is processed locally in your browser
 - 🚫 **No server-side processing** — zero network requests for your files
 - 🚫 **No data collection** — no analytics, no tracking, no cookies
 - ✅ **Fully offline capable** — works without an internet connection after initial load
-
----
 
 ## 🛠️ Tech Stack
 
@@ -48,8 +49,6 @@ BytePDF offers **9 powerful PDF tools**, all running 100% client-side:
 | 🔤 Font Support     | [@pdf-lib/fontkit](https://github.com/Hopding/fontkit)         |
 | 🖱️ Drag & Drop      | [dnd-kit](https://dndkit.com/)                                 |
 | 📦 Toolchain CLI    | [Vite+ (`vp`)](https://viteplus.dev/)                          |
-
----
 
 ## 🚀 Getting Started
 
@@ -81,8 +80,6 @@ vp dev
 | `vp preview` | Preview the production build locally      |
 | `vp check`   | Run format, lint, and type checks         |
 | `vp test`    | Run tests                                 |
-
----
 
 ## 🏗️ Project Structure
 
@@ -123,8 +120,6 @@ bytepdf/
 └── package.json
 ```
 
----
-
 ## ⚙️ How It Works
 
 BytePDF leverages two complementary libraries for full PDF support:
@@ -133,8 +128,6 @@ BytePDF leverages two complementary libraries for full PDF support:
 - **[PDF.js](https://mozilla.github.io/pdf.js/)** — Renders PDF pages to canvas for visual previews and thumbnail generation.
 
 All operations happen in-memory using the browser's `FileReader` API and `ArrayBuffer`s. Processed files are delivered as downloadable blobs — no data ever touches a remote server.
-
----
 
 ## 🌐 Deployment
 
@@ -147,8 +140,6 @@ The deployment pipeline:
 3. 🏗️ Builds the production bundle with Vite
 4. 🚀 Deploys the `dist/` folder to GitHub Pages
 
----
-
 ## 🤝 Contributing
 
 Contributions are welcome! Here's how to get started:
@@ -159,13 +150,9 @@ Contributions are welcome! Here's how to get started:
 4. **Push** to the branch (`git push origin feature/amazing-feature`)
 5. **Open** a Pull Request
 
----
-
 ## 📄 License
 
 This project is licensed under the **MIT License** — feel free to use it for both personal and commercial purposes. See the [LICENSE](LICENSE) file for details.
-
----
 
 <p align="center">
   Built with ❤️ for privacy-conscious users everywhere
