@@ -93,29 +93,10 @@ bytepdf/
 │   ├── index.css           # Global styles & Tailwind theme
 │   ├── types.ts            # TypeScript type definitions
 │   ├── assets/             # Images & icons
-│   ├── components/         # Reusable UI components
-│   │   ├── FileDropZone.tsx    # Drag-and-drop file input
-│   │   ├── Layout.tsx          # Page wrapper with header & footer
-│   │   ├── PageThumbnail.tsx   # PDF page preview card
-│   │   ├── SignaturePad.tsx    # Canvas-based signature drawing
-│   │   └── ToolCard.tsx        # Home screen tool card
-│   ├── config/
-│   │   └── theme.ts        # Color palette & theme tokens
-│   ├── tools/              # Individual tool pages
-│   │   ├── AddSignature.tsx
-│   │   ├── AddWatermark.tsx
-│   │   ├── CompressPdf.tsx
-│   │   ├── DeletePages.tsx
-│   │   ├── ImagesToPdf.tsx
-│   │   ├── MergePdf.tsx
-│   │   ├── ReorderPages.tsx
-│   │   ├── RotatePages.tsx
-│   │   ├── SplitPdf.tsx
-│   │   └── EditMetadata.tsx
-│   └── utils/              # Core logic
-│       ├── file-helpers.ts     # File reading, downloading, formatting
-│       ├── pdf-operations.ts   # All PDF manipulation functions
-│       └── pdf-renderer.ts     # Page rendering & thumbnail generation
+│   ├── components/         # Reusable UI components (layout, drop zone, thumbnails, etc.)
+│   ├── config/             # Color palette & theme tokens
+│   ├── tools/              # One component per tool (merge, split, compress, etc.)
+│   └── utils/              # Core PDF operations, file helpers, rendering
 ├── index.html              # HTML entry point
 ├── vite.config.ts          # Vite + Tailwind configuration
 ├── tsconfig.json           # TypeScript configuration
