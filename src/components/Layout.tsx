@@ -6,7 +6,7 @@
  * All pages/tools are rendered inside `children`.
  */
 
-import type { ReactNode } from "react";
+import { useState, useEffect, useRef, type ReactNode } from "react";
 
 interface LayoutProps {
   /** Content to render in the main area. */
@@ -18,6 +18,24 @@ interface LayoutProps {
 }
 
 export function Layout({ children, onHome, showBack }: LayoutProps) {
+  const [showTooltip, setShowTooltip] = useState(false);
+  const tooltipRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!showTooltip) return;
+    const timer = setTimeout(() => setShowTooltip(false), 2000);
+    const handleClickOutside = (e: MouseEvent) => {
+      if (tooltipRef.current && !tooltipRef.current.contains(e.target as Node)) {
+        setShowTooltip(false);
+      }
+    };
+    document.addEventListener("click", handleClickOutside, true);
+    return () => {
+      clearTimeout(timer);
+      document.removeEventListener("click", handleClickOutside, true);
+    };
+  }, [showTooltip]);
+
   return (
     <div className="min-h-screen bg-linear-to-br from-slate-50 to-primary-50/30 dark:from-dark-bg dark:to-dark-bg flex flex-col">
       <header className="bg-white/80 dark:bg-dark-surface/80 backdrop-blur-sm border-b border-slate-200 dark:border-dark-border sticky top-0 z-50">
@@ -101,21 +119,34 @@ export function Layout({ children, onHome, showBack }: LayoutProps) {
             </span>
           </button>
           <div className="ml-auto flex items-center gap-1.5 sm:gap-2">
-            <div className="flex items-center justify-center gap-1.5 text-xs bg-primary-50 dark:bg-primary-900/40 text-primary-700 dark:text-primary-300 p-1.5 sm:px-2.5 sm:py-1 rounded-full">
-              <svg
-                className="w-4 h-4 sm:w-3 sm:h-3 shrink-0"
-                fill="currentColor"
-                viewBox="0 0 20 20"
+            <div ref={tooltipRef} className="relative">
+              <button
+                type="button"
+                onClick={() => setShowTooltip((v) => !v)}
+                className="flex items-center justify-center gap-1.5 text-xs bg-primary-50 dark:bg-primary-900/40 text-primary-700 dark:text-primary-300 p-1.5 sm:px-2.5 sm:py-1 rounded-full sm:cursor-default"
+                aria-label="100% Private and Open Source"
               >
-                <path
-                  fillRule="evenodd"
-                  d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
-                  clipRule="evenodd"
-                />
-              </svg>
-              <span className="hidden sm:inline whitespace-nowrap">100% Private</span>
-              <span className="hidden sm:inline text-primary-400 dark:text-primary-500">&</span>
-              <span className="hidden sm:inline whitespace-nowrap">Open Source</span>
+                <svg
+                  className="w-4 h-4 sm:w-3 sm:h-3 shrink-0"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+                <span className="hidden sm:inline whitespace-nowrap">100% Private</span>
+                <span className="hidden sm:inline text-primary-400 dark:text-primary-500">&</span>
+                <span className="hidden sm:inline whitespace-nowrap">Open Source</span>
+              </button>
+              {showTooltip && (
+                <div className="sm:hidden absolute top-full right-0 mt-2 px-3 py-1.5 rounded-lg bg-slate-800 dark:bg-slate-700 text-white text-xs whitespace-nowrap shadow-lg animate-fade-in z-50">
+                  100% Private & Open Source
+                  <div className="absolute -top-1 right-3 w-2 h-2 bg-slate-800 dark:bg-slate-700 rotate-45" />
+                </div>
+              )}
             </div>
             <a
               href="https://github.com/sumitsahoo/bytepdf"
