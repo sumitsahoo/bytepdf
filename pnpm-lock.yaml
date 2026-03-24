@@ -39,7 +39,7 @@ importers:
     devDependencies:
       '@tailwindcss/vite':
         specifier: ^4.2.2
-        version: 4.2.2(@voidzero-dev/vite-plus-core@0.1.13(jiti@2.6.1)(terser@5.46.1)(typescript@5.9.3))
+        version: 4.2.2(@voidzero-dev/vite-plus-core@0.1.13(jiti@2.6.1)(terser@5.46.1)(typescript@6.0.2))
       '@types/react':
         specifier: ^19.2.14
         version: 19.2.14
@@ -48,22 +48,22 @@ importers:
         version: 19.2.3(@types/react@19.2.14)
       '@vitejs/plugin-react':
         specifier: ^6.0.1
-        version: 6.0.1(@voidzero-dev/vite-plus-core@0.1.13(jiti@2.6.1)(terser@5.46.1)(typescript@5.9.3))
+        version: 6.0.1(@voidzero-dev/vite-plus-core@0.1.13(jiti@2.6.1)(terser@5.46.1)(typescript@6.0.2))
       tailwindcss:
         specifier: ^4.2.2
         version: 4.2.2
       typescript:
-        specifier: ~5.9.3
-        version: 5.9.3
+        specifier: ~6.0.0
+        version: 6.0.2
       vite:
         specifier: npm:@voidzero-dev/vite-plus-core@latest
-        version: '@voidzero-dev/vite-plus-core@0.1.13(jiti@2.6.1)(terser@5.46.1)(typescript@5.9.3)'
+        version: '@voidzero-dev/vite-plus-core@0.1.13(jiti@2.6.1)(terser@5.46.1)(typescript@6.0.2)'
       vite-plugin-pwa:
         specifier: ^1.2.0
-        version: 1.2.0(@vite-pwa/assets-generator@1.0.2)(@voidzero-dev/vite-plus-core@0.1.13(jiti@2.6.1)(terser@5.46.1)(typescript@5.9.3))(workbox-build@7.4.0)(workbox-window@7.4.0)
+        version: 1.2.0(@vite-pwa/assets-generator@1.0.2)(@voidzero-dev/vite-plus-core@0.1.13(jiti@2.6.1)(terser@5.46.1)(typescript@6.0.2))(workbox-build@7.4.0)(workbox-window@7.4.0)
       vite-plus:
         specifier: latest
-        version: 0.1.13(@voidzero-dev/vite-plus-core@0.1.13(jiti@2.6.1)(terser@5.46.1)(typescript@5.9.3))(jiti@2.6.1)(terser@5.46.1)(typescript@5.9.3)
+        version: 0.1.13(@voidzero-dev/vite-plus-core@0.1.13(jiti@2.6.1)(terser@5.46.1)(typescript@6.0.2))(jiti@2.6.1)(terser@5.46.1)(typescript@6.0.2)
 
 packages:
 
@@ -2452,8 +2452,8 @@ packages:
     resolution: {integrity: sha512-3KS2b+kL7fsuk/eJZ7EQdnEmQoaho/r6KUef7hxvltNA5DR8NAUM+8wJMbJyZ4G9/7i3v5zPBIMN5aybAh2/Jg==}
     engines: {node: '>= 0.4'}
 
-  typescript@5.9.3:
-    resolution: {integrity: sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw==}
+  typescript@6.0.2:
+    resolution: {integrity: sha512-bGdAIrZ0wiGDo5l8c++HWtbaNCWTS4UTv7RaTH/ThVIgjkveJt83m74bBHMJkuCbslY8ixgLBVZJIOiQlQTjfQ==}
     engines: {node: '>=14.17'}
     hasBin: true
 
@@ -3729,12 +3729,12 @@ snapshots:
       '@tailwindcss/oxide-win32-arm64-msvc': 4.2.2
       '@tailwindcss/oxide-win32-x64-msvc': 4.2.2
 
-  '@tailwindcss/vite@4.2.2(@voidzero-dev/vite-plus-core@0.1.13(jiti@2.6.1)(terser@5.46.1)(typescript@5.9.3))':
+  '@tailwindcss/vite@4.2.2(@voidzero-dev/vite-plus-core@0.1.13(jiti@2.6.1)(terser@5.46.1)(typescript@6.0.2))':
     dependencies:
       '@tailwindcss/node': 4.2.2
       '@tailwindcss/oxide': 4.2.2
       tailwindcss: 4.2.2
-      vite: '@voidzero-dev/vite-plus-core@0.1.13(jiti@2.6.1)(terser@5.46.1)(typescript@5.9.3)'
+      vite: '@voidzero-dev/vite-plus-core@0.1.13(jiti@2.6.1)(terser@5.46.1)(typescript@6.0.2)'
 
   '@types/chai@5.2.3':
     dependencies:
@@ -3769,12 +3769,12 @@ snapshots:
       unconfig: 7.5.0
     optional: true
 
-  '@vitejs/plugin-react@6.0.1(@voidzero-dev/vite-plus-core@0.1.13(jiti@2.6.1)(terser@5.46.1)(typescript@5.9.3))':
+  '@vitejs/plugin-react@6.0.1(@voidzero-dev/vite-plus-core@0.1.13(jiti@2.6.1)(terser@5.46.1)(typescript@6.0.2))':
     dependencies:
       '@rolldown/pluginutils': 1.0.0-rc.7
-      vite: '@voidzero-dev/vite-plus-core@0.1.13(jiti@2.6.1)(terser@5.46.1)(typescript@5.9.3)'
+      vite: '@voidzero-dev/vite-plus-core@0.1.13(jiti@2.6.1)(terser@5.46.1)(typescript@6.0.2)'
 
-  '@voidzero-dev/vite-plus-core@0.1.13(jiti@2.6.1)(terser@5.46.1)(typescript@5.9.3)':
+  '@voidzero-dev/vite-plus-core@0.1.13(jiti@2.6.1)(terser@5.46.1)(typescript@6.0.2)':
     dependencies:
       '@oxc-project/runtime': 0.120.0
       '@oxc-project/types': 0.120.0
@@ -3784,7 +3784,7 @@ snapshots:
       fsevents: 2.3.3
       jiti: 2.6.1
       terser: 5.46.1
-      typescript: 5.9.3
+      typescript: 6.0.2
 
   '@voidzero-dev/vite-plus-darwin-arm64@0.1.13':
     optional: true
@@ -3798,11 +3798,11 @@ snapshots:
   '@voidzero-dev/vite-plus-linux-x64-gnu@0.1.13':
     optional: true
 
-  '@voidzero-dev/vite-plus-test@0.1.13(@voidzero-dev/vite-plus-core@0.1.13(jiti@2.6.1)(terser@5.46.1)(typescript@5.9.3))(jiti@2.6.1)(terser@5.46.1)(typescript@5.9.3)':
+  '@voidzero-dev/vite-plus-test@0.1.13(@voidzero-dev/vite-plus-core@0.1.13(jiti@2.6.1)(terser@5.46.1)(typescript@6.0.2))(jiti@2.6.1)(terser@5.46.1)(typescript@6.0.2)':
     dependencies:
       '@standard-schema/spec': 1.1.0
       '@types/chai': 5.2.3
-      '@voidzero-dev/vite-plus-core': 0.1.13(jiti@2.6.1)(terser@5.46.1)(typescript@5.9.3)
+      '@voidzero-dev/vite-plus-core': 0.1.13(jiti@2.6.1)(terser@5.46.1)(typescript@6.0.2)
       es-module-lexer: 1.7.0
       obug: 2.1.1
       pixelmatch: 7.1.0
@@ -3812,7 +3812,7 @@ snapshots:
       tinybench: 2.9.0
       tinyexec: 1.0.4
       tinyglobby: 0.2.15
-      vite: '@voidzero-dev/vite-plus-core@0.1.13(jiti@2.6.1)(terser@5.46.1)(typescript@5.9.3)'
+      vite: '@voidzero-dev/vite-plus-core@0.1.13(jiti@2.6.1)(terser@5.46.1)(typescript@6.0.2)'
       ws: 8.20.0
     transitivePeerDependencies:
       - '@arethetypeswrong/core'
@@ -5000,7 +5000,7 @@ snapshots:
       possible-typed-array-names: 1.1.0
       reflect.getprototypeof: 1.0.10
 
-  typescript@5.9.3: {}
+  typescript@6.0.2: {}
 
   unbox-primitive@1.1.0:
     dependencies:
@@ -5049,12 +5049,12 @@ snapshots:
       escalade: 3.2.0
       picocolors: 1.1.1
 
-  vite-plugin-pwa@1.2.0(@vite-pwa/assets-generator@1.0.2)(@voidzero-dev/vite-plus-core@0.1.13(jiti@2.6.1)(terser@5.46.1)(typescript@5.9.3))(workbox-build@7.4.0)(workbox-window@7.4.0):
+  vite-plugin-pwa@1.2.0(@vite-pwa/assets-generator@1.0.2)(@voidzero-dev/vite-plus-core@0.1.13(jiti@2.6.1)(terser@5.46.1)(typescript@6.0.2))(workbox-build@7.4.0)(workbox-window@7.4.0):
     dependencies:
       debug: 4.4.3
       pretty-bytes: 6.1.1
       tinyglobby: 0.2.15
-      vite: '@voidzero-dev/vite-plus-core@0.1.13(jiti@2.6.1)(terser@5.46.1)(typescript@5.9.3)'
+      vite: '@voidzero-dev/vite-plus-core@0.1.13(jiti@2.6.1)(terser@5.46.1)(typescript@6.0.2)'
       workbox-build: 7.4.0
       workbox-window: 7.4.0
     optionalDependencies:
@@ -5062,11 +5062,11 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  vite-plus@0.1.13(@voidzero-dev/vite-plus-core@0.1.13(jiti@2.6.1)(terser@5.46.1)(typescript@5.9.3))(jiti@2.6.1)(terser@5.46.1)(typescript@5.9.3):
+  vite-plus@0.1.13(@voidzero-dev/vite-plus-core@0.1.13(jiti@2.6.1)(terser@5.46.1)(typescript@6.0.2))(jiti@2.6.1)(terser@5.46.1)(typescript@6.0.2):
     dependencies:
       '@oxc-project/types': 0.120.0
-      '@voidzero-dev/vite-plus-core': 0.1.13(jiti@2.6.1)(terser@5.46.1)(typescript@5.9.3)
-      '@voidzero-dev/vite-plus-test': 0.1.13(@voidzero-dev/vite-plus-core@0.1.13(jiti@2.6.1)(terser@5.46.1)(typescript@5.9.3))(jiti@2.6.1)(terser@5.46.1)(typescript@5.9.3)
+      '@voidzero-dev/vite-plus-core': 0.1.13(jiti@2.6.1)(terser@5.46.1)(typescript@6.0.2)
+      '@voidzero-dev/vite-plus-test': 0.1.13(@voidzero-dev/vite-plus-core@0.1.13(jiti@2.6.1)(terser@5.46.1)(typescript@6.0.2))(jiti@2.6.1)(terser@5.46.1)(typescript@6.0.2)
       cac: 7.0.0
       cross-spawn: 7.0.6
       oxfmt: 0.41.0
