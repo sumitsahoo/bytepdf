@@ -12,7 +12,7 @@
  * document and reading the target page’s dimensions.
  */
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { FileDropZone } from "../components/FileDropZone.tsx";
 import { SignaturePad } from "../components/SignaturePad.tsx";
 import { addSignature } from "../utils/pdf-operations.ts";
@@ -30,6 +30,59 @@ export default function AddSignature() {
   const [position, setPosition] = useState({ xPercent: 50, yPercent: 15 });
   const [sigSize, setSigSize] = useState({ width: 200, height: 80 });
   const [pageDims, setPageDims] = useState<{ width: number; height: number }[]>([]);
+  const [isDragging, setIsDragging] = useState(false);
+
+  const previewRef = useRef<HTMLDivElement>(null);
+  const dragRef = useRef({ active: false, startX: 0, startY: 0, startXPct: 0, startYPct: 0 });
+
+  const handleDragStart = useCallback(
+    (e: React.MouseEvent | React.TouchEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const clientX = "touches" in e ? e.touches[0].clientX : e.clientX;
+      const clientY = "touches" in e ? e.touches[0].clientY : e.clientY;
+      dragRef.current = {
+        active: true,
+        startX: clientX,
+        startY: clientY,
+        startXPct: position.xPercent,
+        startYPct: position.yPercent,
+      };
+      setIsDragging(true);
+    },
+    [position],
+  );
+
+  useEffect(() => {
+    const handleMove = (e: MouseEvent | TouchEvent) => {
+      if (!dragRef.current.active || !previewRef.current) return;
+      const clientX = "touches" in e ? e.touches[0].clientX : e.clientX;
+      const clientY = "touches" in e ? e.touches[0].clientY : e.clientY;
+      const rect = previewRef.current.getBoundingClientRect();
+      const dx = ((clientX - dragRef.current.startX) / rect.width) * 100;
+      // Inverted because CSS bottom is used
+      const dy = ((dragRef.current.startY - clientY) / rect.height) * 100;
+      const newX = Math.max(2, Math.min(98, dragRef.current.startXPct + dx));
+      const newY = Math.max(2, Math.min(98, dragRef.current.startYPct + dy));
+      setPosition({ xPercent: Math.round(newX), yPercent: Math.round(newY) });
+    };
+
+    const handleUp = () => {
+      dragRef.current.active = false;
+      setIsDragging(false);
+    };
+
+    window.addEventListener("mousemove", handleMove);
+    window.addEventListener("mouseup", handleUp);
+    window.addEventListener("touchmove", handleMove);
+    window.addEventListener("touchend", handleUp);
+    return () => {
+      window.removeEventListener("mousemove", handleMove);
+      window.removeEventListener("mouseup", handleUp);
+      window.removeEventListener("touchmove", handleMove);
+      window.removeEventListener("touchend", handleUp);
+    };
+  }, []);
 
   const handleFile = useCallback(async (files: File[]) => {
     const pdf = files[0];
@@ -163,43 +216,26 @@ export default function AddSignature() {
                 </div>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-dark-text mb-1.5">
-                  Position on Page
-                </label>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="text-xs text-slate-500 dark:text-dark-text-muted">
-                      Horizontal: {position.xPercent}%
-                    </label>
-                    <input
-                      type="range"
-                      min={5}
-                      max={95}
-                      value={position.xPercent}
-                      onChange={(e) =>
-                        setPosition((p) => ({ ...p, xPercent: Number(e.target.value) }))
-                      }
-                      className="w-full accent-primary-600"
+              {signatureDataUrl && (
+                <div className="flex items-start gap-2 rounded-lg bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800 px-3 py-2.5">
+                  <svg
+                    className="w-4 h-4 mt-0.5 text-primary-500 shrink-0"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M7 11.5V14m0 0v2.5m0-2.5h2.5M7 14H4.5m11-4L12 6.5m0 0L8.5 10M12 6.5V17"
                     />
-                  </div>
-                  <div>
-                    <label className="text-xs text-slate-500 dark:text-dark-text-muted">
-                      Vertical: {position.yPercent}%
-                    </label>
-                    <input
-                      type="range"
-                      min={5}
-                      max={95}
-                      value={position.yPercent}
-                      onChange={(e) =>
-                        setPosition((p) => ({ ...p, yPercent: Number(e.target.value) }))
-                      }
-                      className="w-full accent-primary-600"
-                    />
-                  </div>
+                  </svg>
+                  <p className="text-xs text-primary-700 dark:text-primary-300 leading-relaxed">
+                    Drag the signature on the preview to reposition it
+                  </p>
                 </div>
-              </div>
+              )}
 
               {thumbnails.length > 1 && (
                 <div>
@@ -227,7 +263,10 @@ export default function AddSignature() {
                   <div className="w-8 h-8 border-3 border-primary-200 border-t-primary-600 rounded-full animate-spin" />
                 </div>
               ) : thumbnails[selectedPage] ? (
-                <div className="relative aspect-3/4 bg-white dark:bg-dark-surface rounded-lg border border-slate-200 dark:border-dark-border overflow-hidden">
+                <div
+                  ref={previewRef}
+                  className="relative aspect-3/4 bg-white dark:bg-dark-surface rounded-lg border border-slate-200 dark:border-dark-border overflow-hidden"
+                >
                   <img
                     src={thumbnails[selectedPage]}
                     alt={`Page ${selectedPage + 1}`}
@@ -235,11 +274,12 @@ export default function AddSignature() {
                   />
                   {signatureDataUrl && (
                     <div
-                      className="absolute pointer-events-none border-2 border-dashed border-primary-400 rounded"
+                      className="absolute border-2 border-dashed border-primary-400 rounded select-none touch-none"
                       style={{
                         left: `${position.xPercent}%`,
                         bottom: `${position.yPercent}%`,
                         transform: "translate(-50%, 50%)",
+                        cursor: isDragging ? "grabbing" : "grab",
                         width: pageDims[selectedPage]
                           ? `${(sigSize.width / pageDims[selectedPage].width) * 100}%`
                           : `${sigSize.width * 0.3}px`,
@@ -247,11 +287,13 @@ export default function AddSignature() {
                           ? `${(sigSize.height / pageDims[selectedPage].height) * 100}%`
                           : `${sigSize.height * 0.3}px`,
                       }}
+                      onMouseDown={handleDragStart}
+                      onTouchStart={handleDragStart}
                     >
                       <img
                         src={signatureDataUrl}
                         alt="Signature"
-                        className="w-full h-full object-contain"
+                        className="w-full h-full object-contain pointer-events-none"
                       />
                     </div>
                   )}
