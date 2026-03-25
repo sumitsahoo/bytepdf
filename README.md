@@ -13,6 +13,10 @@
 
 </div>
 
+<p align="center">
+  <img src="public/screenshots/iPad.png" alt="BytePDF Interface" width="800">
+</p>
+
 ## ✨ Features
 
 BytePDF offers **12 powerful PDF tools**, all running 100% client-side:
