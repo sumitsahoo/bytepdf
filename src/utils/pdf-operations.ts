@@ -622,3 +622,60 @@ export async function extractTextOcr(
 
   return pageTexts;
 }
+
+/**
+ * Create a searchable PDF by overlaying invisible OCR text on each page.
+ *
+ * This takes the original PDF file and the per-page OCR text, then embeds
+ * the text as a transparent layer on each page using pdf-lib. The result
+ * looks identical to the original but is now searchable and selectable.
+ *
+ * @param file - The original PDF file.
+ * @param pageTexts - Array of per-page OCR text strings.
+ * @returns Uint8Array of the new searchable PDF.
+ */
+export async function createSearchablePdf(file: File, pageTexts: string[]): Promise<Uint8Array> {
+  const arrayBuffer = await file.arrayBuffer();
+  const pdfDoc = await PDFDocument.load(arrayBuffer);
+  const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+  const pageCount = pdfDoc.getPageCount();
+
+  for (let i = 0; i < pageCount && i < pageTexts.length; i++) {
+    const text = pageTexts[i];
+    if (!text) continue;
+
+    const page = pdfDoc.getPage(i);
+    const { height } = page.getSize();
+
+    // Split text into lines and draw each as invisible text.
+    // We use a very small font size (1pt) and fully transparent colour
+    // so the text is embedded in the PDF for search/select but not visible.
+    const lines = text.split("\n");
+    const fontSize = 1;
+    const lineHeight = fontSize * 1.2;
+    let y = height - fontSize; // start from top
+
+    for (const line of lines) {
+      if (!line.trim()) {
+        y -= lineHeight;
+        continue;
+      }
+
+      // Clamp y so we don't go below page bottom
+      if (y < 0) break;
+
+      page.drawText(line, {
+        x: 0,
+        y,
+        size: fontSize,
+        font,
+        color: rgb(0, 0, 0),
+        opacity: 0,
+      });
+
+      y -= lineHeight;
+    }
+  }
+
+  return pdfDoc.save();
+}

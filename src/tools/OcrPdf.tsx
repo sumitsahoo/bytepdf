@@ -13,7 +13,7 @@
 
 import { useState, useCallback } from "react";
 import { FileDropZone } from "../components/FileDropZone.tsx";
-import { extractTextOcr } from "../utils/pdf-operations.ts";
+import { extractTextOcr, createSearchablePdf } from "../utils/pdf-operations.ts";
 import { downloadBlob, formatFileSize } from "../utils/file-helpers.ts";
 
 /** Language options displayed as pill buttons. "auto" uses Tesseract OSD. */
@@ -45,6 +45,7 @@ export default function OcrPdf() {
   const [expandedPages, setExpandedPages] = useState<Set<number>>(new Set());
   const [copiedPage, setCopiedPage] = useState<number | null>(null);
   const [copiedAll, setCopiedAll] = useState(false);
+  const [creatingPdf, setCreatingPdf] = useState(false);
 
   const handleFile = useCallback((files: File[]) => {
     const pdf = files[0];
@@ -70,8 +71,8 @@ export default function OcrPdf() {
         if (status) setProgressStatus(status);
       });
       setPages(pageTexts);
-      // Auto-expand all pages by default
-      setExpandedPages(new Set(pageTexts.map((_, i) => i)));
+      // Start with all pages collapsed for easy navigation
+      setExpandedPages(new Set());
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed to extract text. Please try again.");
     } finally {
@@ -115,6 +116,22 @@ export default function OcrPdf() {
     const blob = new Blob([fullText], { type: "text/plain;charset=utf-8" });
     downloadBlob(blob, `${baseName}_ocr.txt`);
   }, [fullText, file]);
+
+  const handleDownloadSearchablePdf = useCallback(async () => {
+    if (!file || pages.length === 0) return;
+    setCreatingPdf(true);
+    setError(null);
+    try {
+      const pdfBytes = await createSearchablePdf(file, pages);
+      const blob = new Blob([new Uint8Array(pdfBytes)], { type: "application/pdf" });
+      const baseName = file.name.replace(/\.pdf$/i, "");
+      downloadBlob(blob, `${baseName}_searchable.pdf`);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Failed to create searchable PDF.");
+    } finally {
+      setCreatingPdf(false);
+    }
+  }, [file, pages]);
 
   const togglePage = useCallback((pageIndex: number) => {
     setExpandedPages((prev) => {
@@ -252,6 +269,22 @@ export default function OcrPdf() {
                 </div>
               </div>
 
+              {/* Expand / Collapse all */}
+              <div className="flex items-center justify-end gap-2">
+                <button
+                  onClick={() => setExpandedPages(new Set(pages.map((_, i) => i)))}
+                  className="text-xs px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-dark-border text-slate-600 dark:text-dark-text-muted hover:bg-slate-200 dark:hover:bg-dark-surface transition-colors"
+                >
+                  ▼ Expand All
+                </button>
+                <button
+                  onClick={() => setExpandedPages(new Set())}
+                  className="text-xs px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-dark-border text-slate-600 dark:text-dark-text-muted hover:bg-slate-200 dark:hover:bg-dark-surface transition-colors"
+                >
+                  ▲ Collapse All
+                </button>
+              </div>
+
               {/* Page-wise text panels */}
               <div className="space-y-2">
                 {pages.map((pageText, idx) => {
@@ -307,18 +340,25 @@ export default function OcrPdf() {
               </div>
 
               {/* Global action buttons */}
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-3 gap-3">
                 <button
                   onClick={handleCopyAll}
-                  className="bg-white dark:bg-dark-surface border border-slate-200 dark:border-dark-border text-slate-700 dark:text-dark-text py-3 px-6 rounded-xl font-medium hover:bg-slate-50 dark:hover:bg-dark-border transition-colors"
+                  className="bg-white dark:bg-dark-surface border border-slate-200 dark:border-dark-border text-slate-700 dark:text-dark-text py-3 px-4 rounded-xl font-medium hover:bg-slate-50 dark:hover:bg-dark-border transition-colors text-sm"
                 >
                   {copiedAll ? "✅ Copied!" : "📋 Copy All"}
                 </button>
                 <button
                   onClick={handleDownload}
-                  className="bg-primary-600 text-white py-3 px-6 rounded-xl font-medium hover:bg-primary-700 transition-colors"
+                  className="bg-white dark:bg-dark-surface border border-slate-200 dark:border-dark-border text-slate-700 dark:text-dark-text py-3 px-4 rounded-xl font-medium hover:bg-slate-50 dark:hover:bg-dark-border transition-colors text-sm"
                 >
-                  💾 Download as TXT
+                  💾 Download TXT
+                </button>
+                <button
+                  onClick={handleDownloadSearchablePdf}
+                  disabled={creatingPdf}
+                  className="bg-primary-600 text-white py-3 px-4 rounded-xl font-medium hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm"
+                >
+                  {creatingPdf ? "Creating…" : "📄 Searchable PDF"}
                 </button>
               </div>
             </div>
