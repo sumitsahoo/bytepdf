@@ -29,6 +29,7 @@ export default function CompressPdf() {
     setResult(null);
   }, []);
 
+  /** Compress the PDF at the selected quality preset and store the result for download. */
   const handleCompress = useCallback(async () => {
     if (!file) return;
     setProcessing(true);
@@ -53,6 +54,7 @@ export default function CompressPdf() {
     downloadPdf(result.data, `${baseName}_compressed.pdf`);
   }, [result, file]);
 
+  // Clamp to 0 so we never show negative savings when the output is larger
   const savings = result
     ? Math.max(0, Math.round(((result.original - result.compressed) / result.original) * 100))
     : 0;

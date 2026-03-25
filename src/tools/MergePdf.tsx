@@ -33,6 +33,7 @@ export default function MergePdf() {
     setFiles((prev) => prev.filter((f) => f.id !== id));
   }, []);
 
+  /** Swap a file with its neighbour to change the merge order. */
   const moveFile = useCallback((index: number, direction: -1 | 1) => {
     setFiles((prev) => {
       const next = [...prev];

@@ -142,6 +142,7 @@ export default function AddSignature() {
       const clientY = "touches" in e ? e.touches[0].clientY : e.clientY;
       const rect = previewRef.current.getBoundingClientRect();
       const dx = ((clientX - dragRef.current.startX) / rect.width) * 100;
+      // dy is inverted: CSS bottom increases upward, but mouse Y increases downward
       const dy = ((dragRef.current.startY - clientY) / rect.height) * 100;
       const newX = Math.max(2, Math.min(98, dragRef.current.startXPct + dx));
       const newY = Math.max(2, Math.min(98, dragRef.current.startYPct + dy));
@@ -216,6 +217,7 @@ export default function AddSignature() {
     [tintEnabled],
   );
 
+  /** Convert the percentage-based preview position to PDF points and embed the signature. */
   const handleApply = useCallback(async () => {
     if (!file || !signatureDataUrl) return;
     setProcessing(true);
@@ -227,6 +229,7 @@ export default function AddSignature() {
       const page = pdfDoc.getPage(selectedPage);
       const { width: pageWidth, height: pageHeight } = page.getSize();
 
+      // Convert centre-based percentage position to bottom-left origin PDF coords
       const x = (position.xPercent / 100) * pageWidth - sigSize.width / 2;
       const y = (position.yPercent / 100) * pageHeight - sigSize.height / 2;
 

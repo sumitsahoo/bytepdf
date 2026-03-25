@@ -44,6 +44,7 @@ export default function ImagesToPdf() {
     setImages((prev) => [...prev, ...items]);
   }, []);
 
+  /** Remove an image from the queue and revoke its object URL to free memory. */
   const removeImage = useCallback((id: string) => {
     setImages((prev) => {
       const item = prev.find((i) => i.id === id);
@@ -52,6 +53,7 @@ export default function ImagesToPdf() {
     });
   }, []);
 
+  /** Swap an image with its neighbour to reorder the output pages. */
   const moveImage = useCallback((index: number, direction: -1 | 1) => {
     setImages((prev) => {
       const next = [...prev];

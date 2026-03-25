@@ -43,6 +43,7 @@ export default function DeletePages() {
     }
   }, []);
 
+  /** Toggle a page's selection state for deletion. */
   const togglePage = useCallback((pageIndex: number) => {
     setSelectedPages((prev) => {
       const next = new Set(prev);
@@ -52,6 +53,7 @@ export default function DeletePages() {
     });
   }, []);
 
+  /** Create a new PDF excluding all selected pages, then trigger download. */
   const handleDelete = useCallback(async () => {
     if (!file || selectedPages.size === 0) return;
     if (selectedPages.size >= thumbnails.length) return; // Can't delete all pages

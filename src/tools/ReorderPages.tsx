@@ -108,6 +108,7 @@ export default function ReorderPages() {
     }
   }, []);
 
+  /** Update the page order array when a drag-and-drop operation completes. */
   const handleDragEnd = useCallback((event: DragEndEvent) => {
     const { active, over } = event;
     if (!over || active.id === over.id) return;
@@ -137,6 +138,7 @@ export default function ReorderPages() {
     }
   }, [file, order]);
 
+  // Only show the "Apply" button when the user has actually changed the order
   const isReordered = order.some((id, i) => Number(id) !== i);
 
   return (

@@ -58,6 +58,7 @@ export default function OcrPdf() {
     setExpandedPages(new Set());
   }, []);
 
+  /** Run Tesseract OCR on every page and store the per-page text results. */
   const handleExtract = useCallback(async () => {
     if (!file) return;
     setProcessing(true);
@@ -82,6 +83,7 @@ export default function OcrPdf() {
     }
   }, [file, language]);
 
+  // Combine all page texts with page-number headers for copy/download operations
   const fullText = pages.map((text, i) => `--- Page ${i + 1} ---\n\n${text}`).join("\n\n");
 
   const handleCopyAll = useCallback(async () => {
@@ -117,6 +119,7 @@ export default function OcrPdf() {
     downloadBlob(blob, `${baseName}_ocr.txt`);
   }, [fullText, file]);
 
+  /** Overlay invisible OCR text on the original PDF so it becomes searchable. */
   const handleDownloadSearchablePdf = useCallback(async () => {
     if (!file || pages.length === 0) return;
     setCreatingPdf(true);

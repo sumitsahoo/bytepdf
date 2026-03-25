@@ -44,6 +44,7 @@ export default function RotatePages() {
     }
   }, []);
 
+  /** Accumulate rotation for a single page (angles are additive, mod 360). */
   const rotatePage = useCallback((pageIndex: number, angle: number) => {
     setRotations((prev) => {
       const next = new Map(prev);
@@ -53,6 +54,7 @@ export default function RotatePages() {
     });
   }, []);
 
+  /** Apply the same rotation increment to every page at once. */
   const rotateAll = useCallback(
     (angle: number) => {
       setRotations((prev) => {

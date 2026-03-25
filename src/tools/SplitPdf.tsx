@@ -61,7 +61,8 @@ export default function SplitPdf() {
     let pages: number[] = [];
 
     if (rangeInput.trim()) {
-      // Parse range input like "1-3, 5, 7-9"
+      // Parse comma-separated range input (e.g. "1-3, 5, 7-9") into
+      // individual 1-based page numbers. Ranges like "2-5" expand to [2,3,4,5].
       const parts = rangeInput.split(",").map((s) => s.trim());
       for (const part of parts) {
         const rangeParts = part.split("-").map((s) => Number.parseInt(s.trim(), 10));
@@ -84,6 +85,7 @@ export default function SplitPdf() {
     setProcessing(true);
     setError(null);
     try {
+      // Wrap each page number as a single-page range for the splitPdf API
       const ranges = pages.map((p) => ({ start: p, end: p }));
       const result = await splitPdf(file, ranges);
       const baseName = file.name.replace(/\.pdf$/i, "");
