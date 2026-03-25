@@ -48,6 +48,7 @@ export interface Tool {
   title: string;
   description: string;
   icon: string;
+  category?: string;
 }
 
 /** Union of all valid tool identifiers. */

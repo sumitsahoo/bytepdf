@@ -34,72 +34,112 @@ const tools: Tool[] = [
     title: "Merge PDFs",
     description: "Combine multiple PDF files into one document",
     icon: "📑",
+    category: "organise",
   },
   {
     id: "split",
     title: "Split PDF",
     description: "Extract specific pages from a PDF file",
     icon: "✂️",
+    category: "organise",
   },
   {
     id: "compress",
     title: "Compress PDF",
     description: "Reduce PDF file size for easier sharing",
     icon: "🗜️",
+    category: "transform",
   },
   {
     id: "rotate",
     title: "Rotate Pages",
     description: "Rotate individual pages in any direction",
     icon: "🔄",
+    category: "organise",
   },
   {
     id: "delete",
     title: "Delete Pages",
     description: "Remove unwanted pages from a PDF",
     icon: "🗑️",
+    category: "organise",
   },
   {
     id: "reorder",
     title: "Reorder Pages",
     description: "Drag and drop to rearrange page order",
     icon: "↕️",
+    category: "organise",
   },
   {
     id: "images-to-pdf",
     title: "Images to PDF",
     description: "Convert images into a PDF document",
     icon: "🖼️",
+    category: "transform",
   },
   {
     id: "watermark",
     title: "Add Watermark",
     description: "Add text watermark to all pages",
     icon: "💧",
+    category: "annotate",
   },
   {
     id: "signature",
     title: "Add Signature",
     description: "Draw or upload a custom signature image and place it on a page",
     icon: "✍️",
+    category: "annotate",
   },
   {
     id: "metadata",
     title: "Edit Metadata",
     description: "View and edit PDF document properties",
     icon: "📋",
+    category: "security",
   },
   {
     id: "ocr",
     title: "OCR PDF",
     description: "Extract text from scanned PDFs using OCR",
     icon: "🔍",
+    category: "transform",
   },
   {
     id: "pdf-password",
     title: "PDF Password",
     description: "Add or remove a password from a PDF",
     icon: "🔒",
+    category: "security",
+  },
+];
+
+// ---- Category definitions for the home screen ----
+const categories = [
+  {
+    key: "organise",
+    label: "Organise & Edit",
+    description: "Rearrange, combine, and manage your PDF pages",
+    icon: "📄",
+  },
+  {
+    key: "transform",
+    label: "Transform & Convert",
+    description: "Compress, convert, and extract content",
+    icon: "🔄",
+  },
+  {
+    key: "annotate",
+    label: "Annotate & Sign",
+    description: "Add watermarks, signatures, and overlays",
+    icon: "✏️",
+  },
+  {
+    key: "security",
+    label: "Security & Properties",
+    description: "Protect your PDFs and manage metadata",
+    icon: "🔐",
   },
 ];
 
@@ -163,14 +203,41 @@ export function App() {
               your device.
             </p>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {tools.map((tool) => (
-              <ToolCard
-                key={tool.id}
-                tool={tool}
-                onClick={() => setActiveTool(tool.id as ToolId)}
-              />
-            ))}
+          <div className="space-y-10">
+            {categories.map((cat, catIdx) => {
+              const catTools = tools.filter((t) => t.category === cat.key);
+              if (catTools.length === 0) return null;
+              return (
+                <section
+                  key={cat.key}
+                  className="animate-fade-in-up"
+                  style={{ animationDelay: `${catIdx * 80}ms` }}
+                >
+                  <div className="flex items-center gap-3 mb-4">
+                    <span className="text-2xl" aria-hidden="true">
+                      {cat.icon}
+                    </span>
+                    <div>
+                      <h2 className="text-lg font-semibold text-slate-800 dark:text-dark-text">
+                        {cat.label}
+                      </h2>
+                      <p className="text-sm text-slate-400 dark:text-dark-text-muted">
+                        {cat.description}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {catTools.map((tool) => (
+                      <ToolCard
+                        key={tool.id}
+                        tool={tool}
+                        onClick={() => setActiveTool(tool.id as ToolId)}
+                      />
+                    ))}
+                  </div>
+                </section>
+              );
+            })}
           </div>
         </div>
       )}
