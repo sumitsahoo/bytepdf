@@ -1075,6 +1075,36 @@ export async function cropPages(
 }
 
 /**
+ * Build a map of fully-qualified field name → 0-based page index by scanning
+ * each page's widget annotations. Useful for grouping form fields by page in a
+ * UI. Fields that appear on multiple pages are mapped to their first occurrence.
+ *
+ * @param file - The source PDF file.
+ * @returns Map of field name → page index.
+ */
+export async function getFieldPageIndices(file: File): Promise<Map<string, number>> {
+  const arrayBuffer = await file.arrayBuffer();
+  const pdf = await PDFDocument.load(arrayBuffer);
+  const map = new Map<string, number>();
+  for (let pageIdx = 0; pageIdx < pdf.getPageCount(); pageIdx++) {
+    const page = pdf.getPage(pageIdx);
+    const annotsEntry = page.node.get(PDFName.of("Annots"));
+    if (!annotsEntry) continue;
+    const annots = pdf.context.lookup(annotsEntry);
+    if (!(annots instanceof PDFArray)) continue;
+    for (let j = 0; j < annots.size(); j++) {
+      const annot = pdf.context.lookup(annots.get(j));
+      if (!(annot instanceof PDFDict)) continue;
+      const subtype = annot.get(PDFName.of("Subtype"));
+      if (!subtype || subtype.toString() !== "/Widget") continue;
+      const name = deriveFullFieldName(pdf, annot);
+      if (name && !map.has(name)) map.set(name, pageIdx);
+    }
+  }
+  return map;
+}
+
+/**
  * Fill interactive form fields in a PDF with the provided values.
  *
  * Handles text fields, checkboxes, dropdowns, and radio groups. Fields whose
