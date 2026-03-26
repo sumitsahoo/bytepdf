@@ -338,23 +338,39 @@ export default function FillPdfForm() {
                           )}
 
                           {field.type === "dropdown" && field.options && (
-                            <select
-                              value={(fieldValues[field.name] as string) ?? ""}
-                              onChange={(e) =>
-                                setFieldValues((prev) => ({
-                                  ...prev,
-                                  [field.name]: e.target.value,
-                                }))
-                              }
-                              className="w-full border border-slate-300 dark:border-dark-border rounded-lg px-3 py-2 text-sm bg-white dark:bg-dark-surface text-slate-800 dark:text-dark-text focus:outline-none focus:ring-2 focus:ring-primary-500"
-                            >
-                              <option value="">— Select —</option>
-                              {field.options.map((opt) => (
-                                <option key={opt} value={opt}>
-                                  {opt}
-                                </option>
-                              ))}
-                            </select>
+                            <div className="relative">
+                              <select
+                                value={(fieldValues[field.name] as string) ?? ""}
+                                onChange={(e) =>
+                                  setFieldValues((prev) => ({
+                                    ...prev,
+                                    [field.name]: e.target.value,
+                                  }))
+                                }
+                                className="w-full appearance-none border border-slate-300 dark:border-dark-border rounded-lg pl-3 pr-9 py-2 text-sm bg-white dark:bg-dark-surface text-slate-800 dark:text-dark-text focus:outline-none focus:ring-2 focus:ring-primary-500 cursor-pointer"
+                              >
+                                <option value="">— Select —</option>
+                                {field.options.map((opt) => (
+                                  <option key={opt} value={opt}>
+                                    {opt}
+                                  </option>
+                                ))}
+                              </select>
+                              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 dark:text-dark-text-muted">
+                                <svg
+                                  className="w-4 h-4"
+                                  viewBox="0 0 16 16"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  strokeWidth="1.75"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  aria-hidden="true"
+                                >
+                                  <path d="M4 6l4 4 4-4" />
+                                </svg>
+                              </div>
+                            </div>
                           )}
 
                           {field.type === "radio" && field.options && (
