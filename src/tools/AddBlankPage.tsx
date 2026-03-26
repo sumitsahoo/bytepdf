@@ -1,27 +1,29 @@
 /**
  * Add Blank Page tool.
  *
- * Loads a PDF and displays its pages as thumbnails. The user picks an
- * insertion position (before any existing page, or at the end) and a
- * new blank page matching the adjacent page's dimensions is inserted.
+ * Loads a PDF and displays its pages as thumbnails. The user drags the
+ * blank page placeholder to the desired insertion position.
  */
 
 import { useState, useCallback } from "react";
 import { FileDropZone } from "../components/FileDropZone.tsx";
-import { PageThumbnail } from "../components/PageThumbnail.tsx";
+import { downloadPdf, formatFileSize } from "../utils/file-helpers.ts";
 import { addBlankPage } from "../utils/pdf-operations.ts";
 import { renderAllThumbnails } from "../utils/pdf-renderer.ts";
-import { downloadPdf, formatFileSize } from "../utils/file-helpers.ts";
 
 export default function AddBlankPage() {
   const [file, setFile] = useState<File | null>(null);
   const [thumbnails, setThumbnails] = useState<string[]>([]);
+  // Stable IDs for thumbnails to avoid index-based keys.
+  const [thumbnailIds, setThumbnailIds] = useState<string[]>([]);
   // insertPosition is the 0-based index at which the blank page will be inserted.
   // 0 = before page 1, thumbnails.length = after the last page.
   const [insertPosition, setInsertPosition] = useState(0);
   const [loading, setLoading] = useState(false);
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragOverPosition, setDragOverPosition] = useState<number | null>(null);
 
   const handleFile = useCallback(async (files: File[]) => {
     const pdf = files[0];
@@ -32,6 +34,7 @@ export default function AddBlankPage() {
     try {
       const thumbs = await renderAllThumbnails(pdf);
       setThumbnails(thumbs);
+      setThumbnailIds(thumbs.map((_, idx) => `thumb-${idx}-${Date.now()}`));
       setInsertPosition(thumbs.length); // default: append at end
     } catch (e) {
       setError(
@@ -67,6 +70,96 @@ export default function AddBlankPage() {
         ? `After page ${thumbnails.length} (at the end)`
         : `Before page ${insertPosition + 1}`;
 
+  // Single stable layout: [dropzone_0] [page_0] [dropzone_1] [page_1] ... [page_N-1] [dropzone_N]
+  // The dropzone at insertPosition renders the draggable "New" card.
+  // Other dropzones are invisible gaps that expand into drop targets while dragging.
+  // Keeping the DOM structure stable prevents the drag from being cancelled when
+  // the draggable element would otherwise be removed on re-render.
+  const renderPageRow = () => {
+    const items: React.ReactNode[] = [];
+
+    for (let i = 0; i <= thumbnails.length; i++) {
+      const isInsertHere = i === insertPosition;
+      const isOver = dragOverPosition === i;
+      const dropId = thumbnailIds[i] ?? "drop-end";
+
+      if (isInsertHere) {
+        items.push(
+          <button
+            key="new-blank-page"
+            type="button"
+            draggable
+            onDragStart={(e) => {
+              e.dataTransfer.effectAllowed = "move";
+              setIsDragging(true);
+            }}
+            onDragEnd={() => {
+              setIsDragging(false);
+              setDragOverPosition(null);
+            }}
+            className="shrink-0 flex flex-col items-center gap-1 cursor-grab active:cursor-grabbing border-0 bg-transparent p-0"
+          >
+            <div className="w-16 aspect-3/4 rounded-lg border-2 border-dashed border-primary-400 bg-primary-50 dark:bg-primary-900/20 flex items-center justify-center">
+              <span className="text-primary-500 text-xl font-light">+</span>
+            </div>
+            <span className="text-xs text-primary-500 font-medium">New</span>
+          </button>,
+        );
+      } else {
+        items.push(
+          <button
+            key={`drop-${dropId}`}
+            type="button"
+            aria-label={`Insert before page ${i + 1}`}
+            onDragOver={(e) => {
+              e.preventDefault();
+              setDragOverPosition(i);
+            }}
+            onDragLeave={(e) => {
+              if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+                setDragOverPosition(null);
+              }
+            }}
+            onDrop={(e) => {
+              e.preventDefault();
+              setInsertPosition(i);
+              setIsDragging(false);
+              setDragOverPosition(null);
+            }}
+            className={`shrink-0 self-stretch flex items-center justify-center rounded-lg transition-all duration-150 border-0 bg-transparent p-0 ${
+              isDragging ? (isOver ? "w-16 bg-primary-50 dark:bg-primary-900/20" : "w-4") : "w-1"
+            }`}
+          >
+            {isDragging && (
+              <div
+                className={`rounded-full transition-all duration-150 ${
+                  isOver
+                    ? "w-1 h-14 bg-primary-500"
+                    : "w-0.5 h-10 bg-primary-200 dark:bg-primary-800"
+                }`}
+              />
+            )}
+          </button>,
+        );
+      }
+
+      if (i < thumbnails.length) {
+        items.push(
+          <div key={thumbnailIds[i]} className="shrink-0 flex flex-col items-center gap-1">
+            <img
+              src={thumbnails[i]}
+              className="w-16 aspect-3/4 object-cover rounded-lg border border-slate-200 dark:border-dark-border"
+              alt={`Page ${i + 1}`}
+            />
+            <span className="text-xs text-slate-400 dark:text-dark-text-muted">{i + 1}</span>
+          </div>,
+        );
+      }
+    }
+
+    return items;
+  };
+
   return (
     <div className="space-y-6">
       {!file ? (
@@ -83,9 +176,11 @@ export default function AddBlankPage() {
               <span className="font-medium">{file.name}</span> — {formatFileSize(file.size)}
             </p>
             <button
+              type="button"
               onClick={() => {
                 setFile(null);
                 setThumbnails([]);
+                setThumbnailIds([]);
               }}
               className="text-sm text-primary-600 hover:text-primary-700"
             >
@@ -99,75 +194,20 @@ export default function AddBlankPage() {
             </div>
           ) : (
             <>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-dark-text mb-2">
-                  Insertion position
-                </label>
-                <input
-                  type="range"
-                  min={0}
-                  max={thumbnails.length}
-                  step={1}
-                  value={insertPosition}
-                  onChange={(e) => setInsertPosition(Number(e.target.value))}
-                  className="w-full accent-primary-600"
-                />
-                <p className="text-sm text-primary-600 font-medium mt-1">{positionLabel}</p>
-              </div>
-
               <div className="space-y-2">
                 <p className="text-sm font-medium text-slate-700 dark:text-dark-text">
-                  Page order preview
+                  {isDragging
+                    ? "Drop the page at the desired position"
+                    : "Drag the new page to set its position"}
                 </p>
-                <div className="flex gap-2 overflow-x-auto pb-2">
-                  {/* Render pages with an insertion indicator */}
-                  {[...Array(thumbnails.length + 1)].map((_, i) => {
-                    if (i === insertPosition) {
-                      return (
-                        <div
-                          key={`blank-${i}`}
-                          className="flex-shrink-0 flex flex-col items-center gap-1"
-                        >
-                          <div className="w-16 aspect-[3/4] rounded-lg border-2 border-dashed border-primary-400 bg-primary-50 dark:bg-primary-900/20 flex items-center justify-center">
-                            <span className="text-primary-500 text-xl font-light">+</span>
-                          </div>
-                          <span className="text-xs text-primary-500 font-medium">New</span>
-                        </div>
-                      );
-                    }
-                    const thumbIdx = i > insertPosition ? i - 1 : i;
-                    return (
-                      <div
-                        key={`page-${thumbIdx}`}
-                        className="flex-shrink-0 flex flex-col items-center gap-1"
-                      >
-                        <img
-                          src={thumbnails[thumbIdx]}
-                          className="w-16 aspect-[3/4] object-cover rounded-lg border border-slate-200 dark:border-dark-border"
-                          alt={`Page ${thumbIdx + 1}`}
-                        />
-                        <span className="text-xs text-slate-400 dark:text-dark-text-muted">
-                          {thumbIdx + 1}
-                        </span>
-                      </div>
-                    );
-                  })}
+                <div className="flex items-end gap-2 overflow-x-auto pb-2 min-h-22">
+                  {renderPageRow()}
                 </div>
-              </div>
-
-              {/* Page grid for context */}
-              <div>
-                <p className="text-sm text-slate-500 dark:text-dark-text-muted mb-2">
-                  Current pages ({thumbnails.length})
-                </p>
-                <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-2">
-                  {thumbnails.map((thumb, i) => (
-                    <PageThumbnail key={i} src={thumb} pageNumber={i + 1} />
-                  ))}
-                </div>
+                <p className="text-sm text-primary-600 font-medium">{positionLabel}</p>
               </div>
 
               <button
+                type="button"
                 onClick={handleInsert}
                 disabled={processing}
                 className="w-full bg-primary-600 text-white py-3 px-6 rounded-xl font-medium hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
