@@ -51,13 +51,80 @@ export async function renderPageThumbnail(
   const canvas = document.createElement("canvas");
   canvas.width = viewport.width;
   canvas.height = viewport.height;
-  const ctx = canvas.getContext("2d")!;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) throw new Error("Failed to acquire 2D canvas context for thumbnail rendering");
 
   await page.render({ canvasContext: ctx, viewport, canvas }).promise;
   const dataUrl = canvas.toDataURL("image/png");
 
+  // Release canvas bitmap memory before destroying the PDF document
+  canvas.width = 0;
+  canvas.height = 0;
+
   void pdf.destroy();
   return dataUrl;
+}
+
+/**
+ * Render selected pages of a PDF to image Blobs at a given DPI.
+ *
+ * Pages are rendered sequentially to avoid excessive memory usage.
+ * The PDF document is destroyed after all pages are processed.
+ *
+ * @param file - The PDF file whose pages should be rendered.
+ * @param pageIndices - 0-based indices of the pages to render.
+ * @param dpi - Output resolution (72 / 150 / 300).
+ * @param format - MIME type for the output image ("image/png" or "image/jpeg").
+ * @param quality - JPEG quality in 0–1 range (ignored for PNG).
+ * @param onProgress - Optional callback invoked after each page: (rendered, total).
+ * @returns Array of `{ pageIndex, blob }` in the same order as `pageIndices`.
+ */
+export async function renderPagesToBlobs(
+  file: File,
+  pageIndices: number[],
+  dpi: number,
+  format: "image/png" | "image/jpeg",
+  quality = 0.92,
+  onProgress?: (rendered: number, total: number) => void,
+): Promise<{ pageIndex: number; blob: Blob }[]> {
+  const arrayBuffer = await file.arrayBuffer();
+  const scale = dpi / 72;
+  const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+  const results: { pageIndex: number; blob: Blob }[] = [];
+
+  for (let i = 0; i < pageIndices.length; i++) {
+    const pageIndex = pageIndices[i];
+    const page = await pdf.getPage(pageIndex + 1); // PDF.js uses 1-based page numbers
+    const viewport = page.getViewport({ scale });
+
+    const canvas = document.createElement("canvas");
+    canvas.width = viewport.width;
+    canvas.height = viewport.height;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) throw new Error(`Failed to acquire 2D canvas context for page ${pageIndex + 1}`);
+
+    await page.render({ canvasContext: ctx, viewport, canvas }).promise;
+
+    const blob = await new Promise<Blob>((resolve, reject) => {
+      canvas.toBlob(
+        (b) => {
+          if (b) resolve(b);
+          else reject(new Error(`Failed to render page ${pageIndex + 1} to image`));
+        },
+        format,
+        quality,
+      );
+    });
+
+    canvas.width = 0;
+    canvas.height = 0;
+
+    results.push({ pageIndex, blob });
+    onProgress?.(i + 1, pageIndices.length);
+  }
+
+  void pdf.destroy();
+  return results;
 }
 
 /**
@@ -82,10 +149,15 @@ export async function renderAllThumbnails(file: File, scale = 0.4): Promise<stri
     const canvas = document.createElement("canvas");
     canvas.width = viewport.width;
     canvas.height = viewport.height;
-    const ctx = canvas.getContext("2d")!;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) throw new Error(`Failed to acquire 2D canvas context for page ${i}`);
 
     await page.render({ canvasContext: ctx, viewport, canvas }).promise;
     thumbnails.push(canvas.toDataURL("image/png"));
+
+    // Release canvas bitmap memory before moving to the next page
+    canvas.width = 0;
+    canvas.height = 0;
   }
 
   void pdf.destroy();

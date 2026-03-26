@@ -6,9 +6,33 @@
  * (compression). No files are uploaded to any server.
  */
 
-import { PDFDocument, rgb, degrees, StandardFonts } from "pdf-lib";
+import {
+  PDFDocument,
+  PDFTextField,
+  PDFCheckBox,
+  PDFDropdown,
+  PDFRadioGroup,
+  PDFDict,
+  PDFArray,
+  PDFName,
+  PDFNumber,
+  PDFString,
+  PDFRef,
+  rgb,
+  degrees,
+  StandardFonts,
+} from "pdf-lib";
 import fontkit from "@pdf-lib/fontkit";
-import type { PageRange, WatermarkOptions, Position, PdfMetadata } from "../types.ts";
+import type { PDFDocumentProxy } from "pdfjs-dist";
+import type {
+  PageRange,
+  WatermarkOptions,
+  Position,
+  PdfMetadata,
+  PageNumberOptions,
+  HeaderFooterOptions,
+  CropMargins,
+} from "../types.ts";
 /**
  * Merge multiple PDF files into a single document.
  *
@@ -20,6 +44,7 @@ import type { PageRange, WatermarkOptions, Position, PdfMetadata } from "../type
  * @returns The merged PDF as raw bytes.
  */
 export async function mergePdfs(files: File[]): Promise<Uint8Array> {
+  if (files.length === 0) throw new Error("At least one PDF file is required to merge.");
   const merged = await PDFDocument.create();
 
   for (const file of files) {
@@ -112,7 +137,8 @@ export async function compressPdf(
     const canvas = document.createElement("canvas");
     canvas.width = viewport.width;
     canvas.height = viewport.height;
-    const ctx = canvas.getContext("2d")!;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) throw new Error(`Failed to acquire 2D canvas context for page ${i}`);
 
     await page.render({ canvasContext: ctx, viewport, canvas }).promise;
 
@@ -192,6 +218,8 @@ export async function deletePages(file: File, pageIndicesToDelete: number[]): Pr
   const result = await PDFDocument.create();
 
   const keepIndices = source.getPageIndices().filter((i) => !pageIndicesToDelete.includes(i));
+  if (keepIndices.length === 0)
+    throw new Error("Cannot delete all pages — at least one page must remain.");
 
   const copiedPages = await result.copyPages(source, keepIndices);
   for (const page of copiedPages) {
@@ -252,12 +280,13 @@ export async function imagesToPdf(
     const imageBytes = await imageFile.arrayBuffer();
     const uint8 = new Uint8Array(imageBytes);
 
-    let image;
-    if (imageFile.type === "image/png") {
-      image = await pdf.embedPng(uint8);
-    } else {
-      image = await pdf.embedJpg(uint8);
+    if (!["image/png", "image/jpeg", "image/jpg"].includes(imageFile.type)) {
+      throw new Error(
+        `Unsupported image type "${imageFile.type}" (${imageFile.name}). Only PNG and JPEG images are supported.`,
+      );
     }
+    const image =
+      imageFile.type === "image/png" ? await pdf.embedPng(uint8) : await pdf.embedJpg(uint8);
 
     let pageWidth: number;
     let pageHeight: number;
@@ -369,7 +398,10 @@ export async function addSignature(
   const pdf = await PDFDocument.load(arrayBuffer);
 
   // Decode data URL to Uint8Array without fetch() overhead
-  const [header, base64] = signatureDataUrl.split(",");
+  const commaIndex = signatureDataUrl.indexOf(",");
+  if (commaIndex === -1) throw new Error("Invalid signature data URL: missing base64 payload.");
+  const header = signatureDataUrl.slice(0, commaIndex);
+  const base64 = signatureDataUrl.slice(commaIndex + 1);
   const binaryStr = atob(base64);
   const signatureBytes = new Uint8Array(binaryStr.length);
   for (let i = 0; i < binaryStr.length; i++) {
@@ -399,7 +431,7 @@ export async function addSignature(
  * (`YYYY-MM-DDTHH:mm`) suitable for `<input type="datetime-local">`.
  */
 function formatDateForInput(date: Date | undefined): string {
-  if (!date || isNaN(date.getTime())) return "";
+  if (!date || Number.isNaN(date.getTime())) return "";
   const pad = (n: number) => n.toString().padStart(2, "0");
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
 }
@@ -517,7 +549,7 @@ const SCRIPT_TO_LANGUAGE: Record<string, string> = {
  * Extracted as a helper to avoid duplication between detect + recognize passes.
  */
 async function renderPageToCanvas(
-  pdfDoc: { getPage(n: number): Promise<any> },
+  pdfDoc: PDFDocumentProxy,
   pageNum: number,
   scale: number,
 ): Promise<HTMLCanvasElement> {
@@ -527,7 +559,8 @@ async function renderPageToCanvas(
   const canvas = document.createElement("canvas");
   canvas.width = viewport.width;
   canvas.height = viewport.height;
-  const ctx = canvas.getContext("2d")!;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) throw new Error(`Failed to acquire 2D canvas context for page ${pageNum}`);
 
   await page.render({ canvasContext: ctx, viewport, canvas }).promise;
   preprocessCanvasForOcr(canvas);
@@ -611,7 +644,7 @@ export async function extractTextOcr(
         for (const block of data.blocks) {
           for (const paragraph of block.paragraphs) {
             for (const line of paragraph.lines) {
-              pageText += line.text + "\n";
+              pageText += `${line.text}\n`;
             }
             pageText += "\n"; // paragraph break
           }
@@ -692,4 +725,489 @@ export async function createSearchablePdf(file: File, pageTexts: string[]): Prom
   }
 
   return pdfDoc.save();
+}
+
+/**
+ * Insert a blank page into a PDF at the specified position.
+ *
+ * The blank page dimensions are copied from the adjacent page so the new
+ * page blends seamlessly. Falls back to A4 if the PDF has no pages.
+ *
+ * @param file - The source PDF file.
+ * @param position - 0-based index at which to insert (0 = before first page).
+ * @returns New PDF bytes with the blank page inserted.
+ */
+export async function addBlankPage(file: File, position: number): Promise<Uint8Array> {
+  const arrayBuffer = await file.arrayBuffer();
+  const pdf = await PDFDocument.load(arrayBuffer);
+  const pageCount = pdf.getPageCount();
+  const refIndex = Math.min(Math.max(position, 0), pageCount - 1);
+  const { width, height } =
+    pageCount > 0 ? pdf.getPage(refIndex).getSize() : { width: 595, height: 842 };
+  pdf.insertPage(position, [width, height]);
+  return pdf.save();
+}
+
+/**
+ * Duplicate a page in a PDF and insert the copy at a target position.
+ *
+ * The source page is copied from a fresh load of the same file to avoid
+ * internal reference issues. Any interactive form fields on the copied page
+ * are registered as new standalone AcroForm fields with unique names so that
+ * FillPdfForm (and any PDF viewer) treats them independently from the originals.
+ *
+ * @param file - The source PDF file.
+ * @param sourceIndex - 0-based index of the page to duplicate.
+ * @param targetPosition - 0-based index at which to insert the copy.
+ * @returns New PDF bytes with the duplicated page inserted.
+ */
+export async function duplicatePage(
+  file: File,
+  sourceIndex: number,
+  targetPosition: number,
+): Promise<Uint8Array> {
+  const arrayBuffer = await file.arrayBuffer();
+  const source = await PDFDocument.load(arrayBuffer);
+  const result = await PDFDocument.load(arrayBuffer);
+  const [copiedPage] = await result.copyPages(source, [sourceIndex]);
+  result.insertPage(targetPosition, copiedPage);
+  clonePageFormFields(result, targetPosition);
+  return result.save();
+}
+
+/**
+ * After a page has been inserted as a copy, promote every widget annotation on
+ * that page to a standalone top-level AcroForm field with a unique name.
+ *
+ * When pdf-lib copies a page it deep-copies the widget annotation objects but
+ * does NOT add them to the AcroForm field tree. This means form.getFields()
+ * only returns each field once even when the same form page is duplicated.
+ * This function fixes that by walking the new page's /Annots, inheriting field
+ * attributes from each widget's /Parent chain, assigning a unique /T, removing
+ * the /Parent link, and registering the widget in AcroForm /Fields.
+ */
+function clonePageFormFields(pdf: PDFDocument, pageIndex: number): void {
+  const page = pdf.getPage(pageIndex);
+  const pageNode = page.node;
+
+  const annotsEntry = pageNode.get(PDFName.of("Annots"));
+  if (!annotsEntry) return;
+  const annots = pdf.context.lookup(annotsEntry);
+  if (!(annots instanceof PDFArray)) return;
+
+  const acroFormEntry = pdf.catalog.get(PDFName.of("AcroForm"));
+  if (!acroFormEntry) return;
+  const acroForm = pdf.context.lookup(acroFormEntry);
+  if (!(acroForm instanceof PDFDict)) return;
+
+  const fieldsEntry = acroForm.get(PDFName.of("Fields"));
+  if (!fieldsEntry) return;
+  const topLevelFields = pdf.context.lookup(fieldsEntry);
+  if (!(topLevelFields instanceof PDFArray)) return;
+
+  // Build a set of all existing full field names to guarantee uniqueness.
+  const existingNames = new Set<string>();
+  collectFieldNames(pdf, topLevelFields, "", existingNames);
+
+  for (let i = 0; i < annots.size(); i++) {
+    const annotEntry = annots.get(i);
+    const annot = pdf.context.lookup(annotEntry);
+    if (!(annot instanceof PDFDict)) continue;
+
+    const subtype = annot.get(PDFName.of("Subtype"));
+    if (!subtype || subtype.toString() !== "/Widget") continue;
+
+    // Derive the dotted full name by walking up /Parent collecting /T values.
+    const fullName = deriveFullFieldName(pdf, annot);
+    if (!fullName) continue;
+
+    // Use only the leaf segment as the base for the copy name.
+    const leafName = fullName.split(".").pop() ?? fullName;
+    let uniqueName = `${leafName}_copy`;
+    let counter = 2;
+    while (existingNames.has(uniqueName)) {
+      uniqueName = `${leafName}_copy${counter++}`;
+    }
+    existingNames.add(uniqueName);
+
+    // Pull inheritable attributes (/FT, /Ff, /DV, /DA, etc.) from the parent
+    // chain so this widget becomes a self-contained field object.
+    mergeInheritedFieldAttrs(pdf, annot);
+
+    annot.set(PDFName.of("T"), PDFString.of(uniqueName));
+    annot.delete(PDFName.of("Parent"));
+
+    // Register as a root-level AcroForm field (widgets must be indirect refs).
+    if (annotEntry instanceof PDFRef) {
+      topLevelFields.push(annotEntry);
+    }
+  }
+}
+
+/** Walk the /Parent chain collecting /T values to build the dotted full name. */
+function deriveFullFieldName(pdf: PDFDocument, dict: PDFDict): string | null {
+  const parts: string[] = [];
+  let next: PDFDict | null = dict;
+  while (next !== null) {
+    const current: PDFDict = next;
+    const t = current.get(PDFName.of("T"));
+    if (t) parts.unshift(decodePdfString(t));
+    const parentEntry = current.get(PDFName.of("Parent"));
+    if (!parentEntry) break;
+    const resolved = pdf.context.lookup(parentEntry);
+    next = resolved instanceof PDFDict ? (resolved as PDFDict) : null;
+  }
+  return parts.length > 0 ? parts.join(".") : null;
+}
+
+/** Copy inheritable field attributes from the /Parent chain onto the widget. */
+function mergeInheritedFieldAttrs(pdf: PDFDocument, widget: PDFDict): void {
+  const INHERITABLE = ["FT", "Ff", "V", "DV", "DA", "Q", "Opt", "MaxLen"];
+  let parentEntry = widget.get(PDFName.of("Parent"));
+  while (parentEntry) {
+    const parentDict = pdf.context.lookup(parentEntry);
+    if (!(parentDict instanceof PDFDict)) break;
+    for (const key of INHERITABLE) {
+      const name = PDFName.of(key);
+      if (!widget.get(name)) {
+        const val = parentDict.get(name);
+        if (val) widget.set(name, val);
+      }
+    }
+    parentEntry = parentDict.get(PDFName.of("Parent"));
+  }
+}
+
+/** Recursively collect all full field names reachable from an AcroForm /Fields array. */
+function collectFieldNames(
+  pdf: PDFDocument,
+  fieldsArray: PDFArray,
+  prefix: string,
+  out: Set<string>,
+): void {
+  for (let i = 0; i < fieldsArray.size(); i++) {
+    const entry = pdf.context.lookup(fieldsArray.get(i));
+    if (!(entry instanceof PDFDict)) continue;
+    const t = entry.get(PDFName.of("T"));
+    const name = t ? (prefix ? `${prefix}.${decodePdfString(t)}` : decodePdfString(t)) : prefix;
+    if (name) out.add(name);
+    const kidsEntry = entry.get(PDFName.of("Kids"));
+    if (kidsEntry) {
+      const kids = pdf.context.lookup(kidsEntry);
+      if (kids instanceof PDFArray) collectFieldNames(pdf, kids, name, out);
+    }
+  }
+}
+
+function decodePdfString(obj: { toString(): string } | undefined): string {
+  if (!obj) return "";
+  if (obj instanceof PDFString) return obj.decodeText();
+  // Fallback for any other PDFObject (e.g. PDFHexString): strip delimiters.
+  return obj
+    .toString()
+    .replace(/^\(|\)$/g, "")
+    .replace(/^<|>$/g, "");
+}
+
+/**
+ * Add page numbers to every (or a subset of) pages in a PDF.
+ *
+ * Supports six edge positions and four format presets. The total shown in
+ * "1 / N" style formats accounts for the `firstPage` skip offset so numbering
+ * stays consistent when a cover page is excluded.
+ *
+ * @param file - The source PDF file.
+ * @param options - Page number styling and placement options.
+ * @returns New PDF bytes with page numbers drawn.
+ */
+export async function addPageNumbers(file: File, options: PageNumberOptions): Promise<Uint8Array> {
+  const arrayBuffer = await file.arrayBuffer();
+  const pdf = await PDFDocument.load(arrayBuffer);
+  const font = await pdf.embedFont(StandardFonts.Helvetica);
+  const pages = pdf.getPages();
+  const totalPages = pages.length;
+  // Last visible page number = totalPages - firstPage + startNumber
+  const lastPageNum = totalPages - options.firstPage + options.startNumber;
+
+  for (let i = 0; i < totalPages; i++) {
+    if (i < options.firstPage - 1) continue;
+
+    const displayNum = i - (options.firstPage - 1) + options.startNumber;
+
+    let text: string;
+    switch (options.format) {
+      case "Page 1":
+        text = `Page ${displayNum}`;
+        break;
+      case "1 / N":
+        text = `${displayNum} / ${lastPageNum}`;
+        break;
+      case "Page 1 of N":
+        text = `Page ${displayNum} of ${lastPageNum}`;
+        break;
+      default:
+        text = `${displayNum}`;
+    }
+
+    const page = pages[i];
+    const { width, height } = page.getSize();
+    const textWidth = font.widthOfTextAtSize(text, options.fontSize);
+    const { margin } = options;
+
+    const isLeft = options.position === "top-left" || options.position === "bottom-left";
+    const isRight = options.position === "top-right" || options.position === "bottom-right";
+    const isTop =
+      options.position === "top-left" ||
+      options.position === "top-center" ||
+      options.position === "top-right";
+
+    const x = isLeft ? margin : isRight ? width - textWidth - margin : (width - textWidth) / 2;
+    const y = isTop ? height - margin - options.fontSize : margin;
+
+    page.drawText(text, {
+      x,
+      y,
+      size: options.fontSize,
+      font,
+      color: rgb(options.color.r / 255, options.color.g / 255, options.color.b / 255),
+    });
+  }
+
+  return pdf.save();
+}
+
+/**
+ * Add a header and/or footer to every page of a PDF.
+ *
+ * Each of the six slots (header-left/center/right, footer-left/center/right)
+ * supports `{{page}}` and `{{total}}` tokens that are expanded per page.
+ * Center and right text is measured before drawing so it lands correctly.
+ *
+ * @param file - The source PDF file.
+ * @param options - Header/footer text, styling, and layout options.
+ * @returns New PDF bytes with the header and footer applied.
+ */
+export async function addHeaderFooter(
+  file: File,
+  options: HeaderFooterOptions,
+): Promise<Uint8Array> {
+  const arrayBuffer = await file.arrayBuffer();
+  const pdf = await PDFDocument.load(arrayBuffer);
+  const font = await pdf.embedFont(StandardFonts.Helvetica);
+  const pages = pdf.getPages();
+  const totalPages = pages.length;
+
+  for (let i = 0; i < totalPages; i++) {
+    if (options.skipFirstPage && i === 0) continue;
+
+    const page = pages[i];
+    const { width, height } = page.getSize();
+    const pageNum = i + 1;
+
+    const resolve = (t: string) =>
+      t.replace(/\{\{page\}\}/g, String(pageNum)).replace(/\{\{total\}\}/g, String(totalPages));
+
+    const drawSlot = (raw: string, x: number, y: number) => {
+      if (!raw.trim()) return;
+      const text = resolve(raw);
+      page.drawText(text, {
+        x,
+        y,
+        size: options.fontSize,
+        font,
+        color: rgb(options.color.r / 255, options.color.g / 255, options.color.b / 255),
+      });
+    };
+
+    const m = options.margin;
+    const yTop = height - m - options.fontSize;
+    const yBot = m;
+
+    // Header row
+    drawSlot(options.headerLeft, m, yTop);
+    if (options.headerCenter.trim()) {
+      const tw = font.widthOfTextAtSize(resolve(options.headerCenter), options.fontSize);
+      drawSlot(options.headerCenter, (width - tw) / 2, yTop);
+    }
+    if (options.headerRight.trim()) {
+      const tw = font.widthOfTextAtSize(resolve(options.headerRight), options.fontSize);
+      drawSlot(options.headerRight, width - m - tw, yTop);
+    }
+
+    // Footer row
+    drawSlot(options.footerLeft, m, yBot);
+    if (options.footerCenter.trim()) {
+      const tw = font.widthOfTextAtSize(resolve(options.footerCenter), options.fontSize);
+      drawSlot(options.footerCenter, (width - tw) / 2, yBot);
+    }
+    if (options.footerRight.trim()) {
+      const tw = font.widthOfTextAtSize(resolve(options.footerRight), options.fontSize);
+      drawSlot(options.footerRight, width - m - tw, yBot);
+    }
+  }
+
+  return pdf.save();
+}
+
+/**
+ * Crop pages by setting a crop box that hides the specified margins.
+ *
+ * The crop box is a non-destructive trim — the hidden content remains in the
+ * file but won't be rendered or printed. At least one target page must have
+ * positive remaining dimensions for the operation to succeed.
+ *
+ * @param file - The source PDF file.
+ * @param margins - Margin values in PDF points to hide on each edge.
+ * @param pageIndices - Optional 0-based indices to crop; defaults to all pages.
+ * @returns New PDF bytes with crop boxes applied.
+ */
+export async function cropPages(
+  file: File,
+  margins: CropMargins,
+  pageIndices?: number[],
+): Promise<Uint8Array> {
+  const arrayBuffer = await file.arrayBuffer();
+  const pdf = await PDFDocument.load(arrayBuffer);
+  const allPages = pdf.getPages();
+  const targets = pageIndices ? pageIndices.map((i) => allPages[i]) : allPages;
+
+  for (const page of targets) {
+    const { width, height } = page.getSize();
+    const x = margins.left;
+    const y = margins.bottom;
+    const w = width - margins.left - margins.right;
+    const h = height - margins.top - margins.bottom;
+    if (w > 0 && h > 0) {
+      page.setCropBox(x, y, w, h);
+    }
+  }
+
+  return pdf.save();
+}
+
+/**
+ * Remove the crop box from pages to restore the full visible area. Because
+ * cropping is non-destructive (the original content is never removed), this
+ * effectively reverses any crop applied by `cropPages` or any other tool.
+ *
+ * @param file - The PDF file to modify.
+ * @param pageIndices - Optional 0-based indices to uncrop; defaults to all pages.
+ * @returns New PDF bytes with crop boxes removed.
+ */
+export async function uncropPages(file: File, pageIndices?: number[]): Promise<Uint8Array> {
+  const arrayBuffer = await file.arrayBuffer();
+  const pdf = await PDFDocument.load(arrayBuffer);
+  const allPages = pdf.getPages();
+  const targets = pageIndices ? pageIndices.map((i) => allPages[i]) : allPages;
+  for (const page of targets) {
+    page.node.delete(PDFName.of("CropBox"));
+  }
+  return pdf.save();
+}
+
+/**
+ * Build a map of fully-qualified field name → { pageIndex, y } by scanning
+ * each page's widget annotations. The y value is the top of the widget's Rect
+ * in PDF user-space units (higher = closer to top of page). Useful for grouping
+ * and sorting form fields by their visual position in the document.
+ * Fields that appear on multiple pages are mapped to their first occurrence.
+ *
+ * @param file - The source PDF file.
+ * @returns Map of field name → pageIndex and y position.
+ */
+export async function getFieldPageIndices(
+  file: File,
+): Promise<Map<string, { pageIndex: number; y: number }>> {
+  const arrayBuffer = await file.arrayBuffer();
+  const pdf = await PDFDocument.load(arrayBuffer);
+  const map = new Map<string, { pageIndex: number; y: number }>();
+  for (let pageIdx = 0; pageIdx < pdf.getPageCount(); pageIdx++) {
+    const page = pdf.getPage(pageIdx);
+    const annotsEntry = page.node.get(PDFName.of("Annots"));
+    if (!annotsEntry) continue;
+    const annots = pdf.context.lookup(annotsEntry);
+    if (!(annots instanceof PDFArray)) continue;
+    for (let j = 0; j < annots.size(); j++) {
+      const annot = pdf.context.lookup(annots.get(j));
+      if (!(annot instanceof PDFDict)) continue;
+      const subtype = annot.get(PDFName.of("Subtype"));
+      if (!subtype || subtype.toString() !== "/Widget") continue;
+      const name = deriveFullFieldName(pdf, annot);
+      if (!name || map.has(name)) continue;
+      // Extract the upper-left y from the Rect [llx, lly, urx, ury].
+      // ury is the top edge; higher value = higher on page.
+      let y = 0;
+      const rectEntry = annot.get(PDFName.of("Rect"));
+      if (rectEntry) {
+        const rect = pdf.context.lookup(rectEntry);
+        if (rect instanceof PDFArray && rect.size() >= 4) {
+          const ury = rect.get(3);
+          if (ury instanceof PDFNumber) y = ury.asNumber();
+        }
+      }
+      map.set(name, { pageIndex: pageIdx, y });
+    }
+  }
+  return map;
+}
+
+/**
+ * Fill interactive form fields in a PDF with the provided values.
+ *
+ * Handles text fields, checkboxes, dropdowns, and radio groups. Fields whose
+ * names are not found in `fieldValues` are left unchanged. Silently skips
+ * any field that errors (e.g. read-only or unsupported type). Optionally
+ * flattens the form after filling to produce a non-editable document.
+ *
+ * @param file - The source PDF file containing form fields.
+ * @param fieldValues - Map of field name → value (string for text/dropdown/radio, boolean for checkboxes).
+ * @param flatten - If true, flattens the form after filling (default false).
+ * @returns New PDF bytes with fields filled (and optionally flattened).
+ */
+export async function fillPdfForm(
+  file: File,
+  fieldValues: Record<string, string | boolean>,
+  flatten = false,
+): Promise<Uint8Array> {
+  const arrayBuffer = await file.arrayBuffer();
+  const pdf = await PDFDocument.load(arrayBuffer);
+  const form = pdf.getForm();
+
+  for (const [name, value] of Object.entries(fieldValues)) {
+    try {
+      const field = form.getField(name);
+      if (field instanceof PDFTextField) {
+        field.setText(typeof value === "string" ? value : "");
+      } else if (field instanceof PDFCheckBox) {
+        if (value === true || value === "true") field.check();
+        else field.uncheck();
+      } else if (field instanceof PDFDropdown) {
+        if (typeof value === "string" && value) field.select(value);
+      } else if (field instanceof PDFRadioGroup) {
+        if (typeof value === "string" && value) field.select(value);
+      }
+    } catch {
+      // Skip fields that cannot be set (read-only, unknown type, etc.)
+    }
+  }
+
+  if (flatten) form.flatten();
+
+  return pdf.save();
+}
+
+/**
+ * Flatten a PDF by removing all interactive form fields and annotations,
+ * converting them to static content.
+ *
+ * Useful for locking down filled forms and removing comments before sharing.
+ *
+ * @param file - The source PDF file.
+ * @returns The flattened PDF as raw bytes.
+ */
+export async function flattenPdf(file: File): Promise<Uint8Array> {
+  const arrayBuffer = await file.arrayBuffer();
+  const pdf = await PDFDocument.load(arrayBuffer);
+  pdf.getForm().flatten();
+  return pdf.save();
 }
