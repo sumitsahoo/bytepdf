@@ -15,6 +15,7 @@ import {
   PDFDict,
   PDFArray,
   PDFName,
+  PDFNumber,
   PDFString,
   PDFRef,
   rgb,
@@ -1075,17 +1076,21 @@ export async function cropPages(
 }
 
 /**
- * Build a map of fully-qualified field name → 0-based page index by scanning
- * each page's widget annotations. Useful for grouping form fields by page in a
- * UI. Fields that appear on multiple pages are mapped to their first occurrence.
+ * Build a map of fully-qualified field name → { pageIndex, y } by scanning
+ * each page's widget annotations. The y value is the top of the widget's Rect
+ * in PDF user-space units (higher = closer to top of page). Useful for grouping
+ * and sorting form fields by their visual position in the document.
+ * Fields that appear on multiple pages are mapped to their first occurrence.
  *
  * @param file - The source PDF file.
- * @returns Map of field name → page index.
+ * @returns Map of field name → pageIndex and y position.
  */
-export async function getFieldPageIndices(file: File): Promise<Map<string, number>> {
+export async function getFieldPageIndices(
+  file: File,
+): Promise<Map<string, { pageIndex: number; y: number }>> {
   const arrayBuffer = await file.arrayBuffer();
   const pdf = await PDFDocument.load(arrayBuffer);
-  const map = new Map<string, number>();
+  const map = new Map<string, { pageIndex: number; y: number }>();
   for (let pageIdx = 0; pageIdx < pdf.getPageCount(); pageIdx++) {
     const page = pdf.getPage(pageIdx);
     const annotsEntry = page.node.get(PDFName.of("Annots"));
@@ -1098,7 +1103,19 @@ export async function getFieldPageIndices(file: File): Promise<Map<string, numbe
       const subtype = annot.get(PDFName.of("Subtype"));
       if (!subtype || subtype.toString() !== "/Widget") continue;
       const name = deriveFullFieldName(pdf, annot);
-      if (name && !map.has(name)) map.set(name, pageIdx);
+      if (!name || map.has(name)) continue;
+      // Extract the upper-left y from the Rect [llx, lly, urx, ury].
+      // ury is the top edge; higher value = higher on page.
+      let y = 0;
+      const rectEntry = annot.get(PDFName.of("Rect"));
+      if (rectEntry) {
+        const rect = pdf.context.lookup(rectEntry);
+        if (rect instanceof PDFArray && rect.size() >= 4) {
+          const ury = rect.get(3);
+          if (ury instanceof PDFNumber) y = ury.asNumber();
+        }
+      }
+      map.set(name, { pageIndex: pageIdx, y });
     }
   }
   return map;

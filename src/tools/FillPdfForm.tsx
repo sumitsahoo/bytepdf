@@ -4,6 +4,16 @@
  * Renders all PDF pages as thumbnails. The user selects a page to see and fill
  * its form fields. Field values are kept in memory across page switches so the
  * full document can be downloaded in one go.
+ *
+ * ## Field ordering
+ * PDF form fields are stored in document-internal order, which rarely matches
+ * their visual layout. To present fields in the same top-to-bottom sequence the
+ * user sees on screen, we resolve each field's position from the page's widget
+ * annotations (`getFieldPageIndices`) and then sort by:
+ *   1. Page index ascending  — fields on earlier pages come first.
+ *   2. y-coordinate descending — within a page, higher widget positions
+ *      (i.e. closer to the top) come first.  PDF coordinate origin is
+ *      bottom-left, so a larger y value means nearer to the top of the page.
  */
 
 import { useState, useCallback } from "react";
@@ -20,7 +30,15 @@ interface FieldInfo {
   defaultValue: string | boolean;
   options?: string[];
   multiline?: boolean;
+  /** 0-based index of the page that contains this field's widget annotation. */
   pageIndex: number;
+  /**
+   * Top edge of the widget's bounding box in PDF user-space units (ury from
+   * the annotation Rect array).  Higher values are closer to the top of the
+   * page because PDF coordinates originate at the bottom-left corner.
+   * Used together with `pageIndex` to sort fields in reading order.
+   */
+  y: number;
 }
 
 export default function FillPdfForm() {
@@ -67,7 +85,9 @@ export default function FillPdfForm() {
       const infos: FieldInfo[] = rawFields
         .map((field) => {
           const name = field.getName();
-          const pageIndex = fieldPageMap.get(name) ?? 0;
+          const pos = fieldPageMap.get(name);
+          const pageIndex = pos?.pageIndex ?? 0;
+          const y = pos?.y ?? 0;
           if (field instanceof PDFTextField) {
             return {
               name,
@@ -75,6 +95,7 @@ export default function FillPdfForm() {
               defaultValue: field.getText() ?? "",
               multiline: field.isMultiline(),
               pageIndex,
+              y,
             };
           }
           if (field instanceof PDFCheckBox) {
@@ -83,6 +104,7 @@ export default function FillPdfForm() {
               type: "checkbox" as FieldType,
               defaultValue: field.isChecked(),
               pageIndex,
+              y,
             };
           }
           if (field instanceof PDFDropdown) {
@@ -92,6 +114,7 @@ export default function FillPdfForm() {
               defaultValue: field.getSelected()[0] ?? "",
               options: field.getOptions(),
               pageIndex,
+              y,
             };
           }
           if (field instanceof PDFRadioGroup) {
@@ -101,11 +124,16 @@ export default function FillPdfForm() {
               defaultValue: field.getSelected() ?? "",
               options: field.getOptions(),
               pageIndex,
+              y,
             };
           }
-          return { name, type: "other" as FieldType, defaultValue: "", pageIndex };
+          return { name, type: "other" as FieldType, defaultValue: "", pageIndex, y };
         })
-        .filter((f) => f.type !== "other");
+        .filter((f) => f.type !== "other") as FieldInfo[];
+      // Sort fields by their visual position: top-to-bottom within each page,
+      // pages in document order. PDF y-coordinates origin is bottom-left, so a
+      // higher y value means the widget sits closer to the top of the page.
+      infos.sort((a, b) => a.pageIndex - b.pageIndex || b.y - a.y);
 
       setFields(infos);
       setFieldValues(Object.fromEntries(infos.map((f) => [f.name, f.defaultValue])));
