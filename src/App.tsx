@@ -147,14 +147,14 @@ const tools: Tool[] = [
     title: "Add Page Numbers",
     description: "Insert page numbers with custom position and format",
     icon: "🔢",
-    category: "transform",
+    category: "annotate",
   },
   {
     id: "header-footer",
     title: "Header & Footer",
     description: "Add repeating text at the top and/or bottom of every page",
     icon: "📝",
-    category: "transform",
+    category: "annotate",
   },
   {
     id: "crop-pages",
