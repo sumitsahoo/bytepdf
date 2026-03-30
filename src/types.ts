@@ -99,7 +99,6 @@ export interface CropMargins {
 /** Union of all valid tool identifiers. */
 export type ToolId =
   | "merge"
-  | "split"
   | "compress"
   | "rotate"
   | "delete"
@@ -117,4 +116,13 @@ export type ToolId =
   | "header-footer"
   | "crop-pages"
   | "pdf-to-image"
-  | "fill-pdf-form";
+  | "fill-pdf-form"
+  | "extract-pages"
+  | "reverse-pages"
+  | "redact-pdf"
+  | "stamp-pdf"
+  | "add-bookmarks"
+  | "pdf-inspector"
+  | "repair-pdf"
+  | "nup-pages"
+  | "remove-blank-pages";

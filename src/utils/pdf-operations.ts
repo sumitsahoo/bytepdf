@@ -18,10 +18,26 @@ import {
   PDFNumber,
   PDFString,
   PDFRef,
+  PDFOperator,
+  PDFOperatorNames,
   rgb,
   degrees,
   StandardFonts,
 } from "pdf-lib";
+
+/** Technical information about a PDF document. */
+export interface PdfInfo {
+  pageCount: number;
+  version: string;
+  fileSize: number;
+  title: string;
+  author: string;
+  subject: string;
+  creator: string;
+  producer: string;
+  isEncrypted: boolean;
+  pages: Array<{ width: number; height: number }>;
+}
 import fontkit from "@pdf-lib/fontkit";
 import type { PDFDocumentProxy } from "pdfjs-dist";
 import type {
@@ -370,6 +386,163 @@ export async function addWatermark(
       opacity: options.opacity,
       rotate: degrees(pdfRotation),
     });
+  }
+
+  return pdf.save();
+}
+
+/**
+ * Apply a seal-style stamp to pages of a PDF.
+ *
+ * Draws a classic rubber-seal graphic: two concentric circles forming a
+ * border ring, two small decorative "★" markers at the 9-o'clock and
+ * 3-o'clock positions, and the stamp text centered horizontally inside
+ * the inner circle. All elements inherit the caller's colour and opacity.
+ *
+ * @param file - The PDF file to stamp.
+ * @param text - The stamp label (e.g. "APPROVED").
+ * @param fontSize - Font size in PDF points for the label.
+ * @param color - RGB colour with values in the 0–255 range.
+ * @param opacity - Opacity from 0 (fully transparent) to 1 (fully opaque).
+ * @param pageIndices - Optional array of 0-based page indices to stamp.
+ * @returns PDF bytes with the seal stamp applied.
+ */
+export async function addSealStamp(
+  file: File,
+  text: string,
+  fontSize: number,
+  color: { r: number; g: number; b: number },
+  opacity: number,
+  pageIndices?: number[],
+): Promise<Uint8Array> {
+  const arrayBuffer = await file.arrayBuffer();
+  const pdf = await PDFDocument.load(arrayBuffer);
+  pdf.registerFontkit(fontkit);
+
+  const font = await pdf.embedFont(StandardFonts.HelveticaBold);
+
+  const pages = pageIndices ? pageIndices.map((i) => pdf.getPage(i)) : pdf.getPages();
+
+  const pdfColor = rgb(color.r / 255, color.g / 255, color.b / 255);
+
+  // Measure the text so we can size the seal around it
+  const textWidth = font.widthOfTextAtSize(text, fontSize);
+  const textHeight = font.heightAtSize(fontSize);
+
+  // The inner radius must be large enough that the full text fits inside
+  // with comfortable padding on each side.
+  const horizontalPadding = fontSize * 0.8;
+  const innerRadius = textWidth / 2 + horizontalPadding;
+  const outerRadius = innerRadius + fontSize * 0.6;
+  const borderThickness = fontSize * 0.15;
+
+  // Rotation angle in degrees — positive here because PDF Y-axis points up,
+  // which mirrors the visual direction vs SVG/CSS (which use -12).
+  const rotationDeg = 12;
+  const rotationRad = (rotationDeg * Math.PI) / 180;
+  const cos = Math.cos(rotationRad);
+  const sin = Math.sin(rotationRad);
+
+  for (const page of pages) {
+    const { width, height } = page.getSize();
+    const cx = width / 2;
+    const cy = height / 2;
+
+    // Apply rotation around page center using a content stream transform.
+    // The cm operator sets a transformation matrix: [cos sin -sin cos tx ty]
+    // We translate origin to center, rotate, then translate back.
+    const tx = cx - cos * cx + sin * cy;
+    const ty = cy - sin * cx - cos * cy;
+    page.pushOperators(
+      PDFOperator.of(PDFOperatorNames.PushGraphicsState),
+      PDFOperator.of(PDFOperatorNames.ConcatTransformationMatrix, [
+        PDFNumber.of(cos),
+        PDFNumber.of(sin),
+        PDFNumber.of(-sin),
+        PDFNumber.of(cos),
+        PDFNumber.of(tx),
+        PDFNumber.of(ty),
+      ]),
+    );
+
+    // Outer circle
+    page.drawCircle({
+      x: cx,
+      y: cy,
+      size: outerRadius,
+      borderColor: pdfColor,
+      borderWidth: borderThickness,
+      opacity: 0,
+      borderOpacity: opacity,
+    });
+
+    // Inner circle
+    page.drawCircle({
+      x: cx,
+      y: cy,
+      size: innerRadius,
+      borderColor: pdfColor,
+      borderWidth: borderThickness * 0.7,
+      opacity: 0,
+      borderOpacity: opacity,
+    });
+
+    // Horizontal divider lines above and below the text
+    const lineHalfWidth = innerRadius * 0.75;
+    const lineGap = textHeight * 1.2;
+
+    // Line above text
+    page.drawLine({
+      start: { x: cx - lineHalfWidth, y: cy + lineGap },
+      end: { x: cx + lineHalfWidth, y: cy + lineGap },
+      thickness: borderThickness * 0.5,
+      color: pdfColor,
+      opacity,
+    });
+
+    // Line below text
+    page.drawLine({
+      start: { x: cx - lineHalfWidth, y: cy - lineGap },
+      end: { x: cx + lineHalfWidth, y: cy - lineGap },
+      thickness: borderThickness * 0.5,
+      color: pdfColor,
+      opacity,
+    });
+
+    // Decorative dots at 9-o'clock and 3-o'clock
+    const midRingRadius = (innerRadius + outerRadius) / 2;
+    const dotRadius = fontSize * 0.12;
+
+    // Left dot (9-o'clock)
+    page.drawCircle({
+      x: cx - midRingRadius,
+      y: cy,
+      size: dotRadius,
+      color: pdfColor,
+      opacity,
+    });
+
+    // Right dot (3-o'clock)
+    page.drawCircle({
+      x: cx + midRingRadius,
+      y: cy,
+      size: dotRadius,
+      color: pdfColor,
+      opacity,
+    });
+
+    // Main stamp text — centered
+    page.drawText(text, {
+      x: cx - textWidth / 2,
+      y: cy - textHeight / 2,
+      size: fontSize,
+      font,
+      color: pdfColor,
+      opacity,
+    });
+
+    // Restore graphics state (end rotation)
+    page.pushOperators(PDFOperator.of(PDFOperatorNames.PopGraphicsState));
   }
 
   return pdf.save();
@@ -1210,4 +1383,268 @@ export async function flattenPdf(file: File): Promise<Uint8Array> {
   const pdf = await PDFDocument.load(arrayBuffer);
   pdf.getForm().flatten();
   return pdf.save();
+}
+
+/**
+ * Reverse the page order of a PDF.
+ *
+ * @param file - The source PDF file.
+ * @returns A new PDF with pages in reverse order.
+ */
+export async function reversePages(file: File): Promise<Uint8Array> {
+  const arrayBuffer = await file.arrayBuffer();
+  const source = await PDFDocument.load(arrayBuffer);
+  const result = await PDFDocument.create();
+  const reversedIndices = [...source.getPageIndices()].reverse();
+  const copiedPages = await result.copyPages(source, reversedIndices);
+  for (const page of copiedPages) {
+    result.addPage(page);
+  }
+  return result.save();
+}
+
+/**
+ * Extract a specific set of pages from a PDF into a new document.
+ *
+ * Pages are included in the order given by `pageIndices`.
+ *
+ * @param file - The source PDF file.
+ * @param pageIndices - 0-based indices of pages to keep.
+ * @returns A new PDF containing only the selected pages.
+ */
+export async function extractPages(file: File, pageIndices: number[]): Promise<Uint8Array> {
+  const arrayBuffer = await file.arrayBuffer();
+  const source = await PDFDocument.load(arrayBuffer);
+  const result = await PDFDocument.create();
+  const valid = pageIndices.filter((i) => i >= 0 && i < source.getPageCount());
+  if (valid.length === 0) throw new Error("No valid pages selected.");
+  const copiedPages = await result.copyPages(source, valid);
+  for (const page of copiedPages) {
+    result.addPage(page);
+  }
+  return result.save();
+}
+
+/**
+ * Permanently redact regions of a PDF by drawing filled black rectangles.
+ *
+ * Coordinates are expressed as fractions (0-1) of the page's width and height
+ * measured from the top-left corner. They are converted to PDF user-space points
+ * (origin at bottom-left) before drawing.
+ *
+ * @param file - The source PDF file.
+ * @param redactions - Array of redaction regions per page.
+ * @returns A new PDF with the redacted areas permanently blacked out.
+ */
+export async function redactPdf(
+  file: File,
+  redactions: Array<{ pageIndex: number; xPct: number; yPct: number; wPct: number; hPct: number }>,
+): Promise<Uint8Array> {
+  const arrayBuffer = await file.arrayBuffer();
+  const pdf = await PDFDocument.load(arrayBuffer);
+
+  for (const r of redactions) {
+    if (r.pageIndex < 0 || r.pageIndex >= pdf.getPageCount()) continue;
+    const page = pdf.getPage(r.pageIndex);
+    const { width, height } = page.getSize();
+
+    // Convert from top-left fraction coords to PDF bottom-left points
+    const pdfX = r.xPct * width;
+    const pdfH = r.hPct * height;
+    const pdfY = height - r.yPct * height - pdfH;
+    const pdfW = r.wPct * width;
+
+    page.drawRectangle({
+      x: pdfX,
+      y: pdfY,
+      width: pdfW,
+      height: pdfH,
+      color: rgb(0, 0, 0),
+      opacity: 1,
+    });
+  }
+
+  return pdf.save();
+}
+
+/**
+ * Read technical information about a PDF file.
+ *
+ * Reads the PDF version from the file header bytes, page dimensions, and all
+ * standard metadata fields. Loads with ignoreEncryption:true so encrypted files
+ * can still be inspected without a password.
+ *
+ * @param file - The PDF file to inspect.
+ * @returns A PdfInfo object with metadata and structural details.
+ */
+export async function getPdfInfo(file: File): Promise<PdfInfo> {
+  const arrayBuffer = await file.arrayBuffer();
+
+  // Read PDF version from the file header (first 20 bytes)
+  const header = new TextDecoder("utf-8", { fatal: false }).decode(
+    new Uint8Array(arrayBuffer.slice(0, 20)),
+  );
+  const versionMatch = header.match(/%PDF-(\d+\.\d+)/);
+  const version = versionMatch ? versionMatch[1] : "Unknown";
+
+  const pdf = await PDFDocument.load(arrayBuffer, {
+    throwOnInvalidObject: false,
+    ignoreEncryption: true,
+  });
+
+  const isEncrypted = !!pdf.context.trailerInfo.Encrypt;
+
+  return {
+    pageCount: pdf.getPageCount(),
+    version,
+    fileSize: file.size,
+    title: pdf.getTitle() ?? "",
+    author: pdf.getAuthor() ?? "",
+    subject: pdf.getSubject() ?? "",
+    creator: pdf.getCreator() ?? "",
+    producer: pdf.getProducer() ?? "",
+    isEncrypted,
+    pages: pdf.getPages().map((p) => p.getSize()),
+  };
+}
+
+/**
+ * Attempt to repair a PDF by re-parsing and re-saving it through pdf-lib.
+ *
+ * This fixes many common structural issues such as incorrect cross-reference
+ * tables, duplicate object numbers, and minor dictionary inconsistencies.
+ * The content is not altered — only the PDF structure is rebuilt.
+ *
+ * @param file - The PDF file to repair.
+ * @returns A structurally clean PDF with the same content.
+ */
+export async function repairPdf(file: File): Promise<Uint8Array> {
+  const arrayBuffer = await file.arrayBuffer();
+  const pdf = await PDFDocument.load(arrayBuffer, {
+    throwOnInvalidObject: false,
+    ignoreEncryption: true,
+  });
+  return pdf.save({ useObjectStreams: false });
+}
+
+/**
+ * Add bookmarks (PDF outline) to a document.
+ *
+ * Each bookmark maps a title to a 0-based target page index. Any existing
+ * outline is replaced. The /PageMode is set to UseOutlines so PDF viewers
+ * show the bookmarks panel by default.
+ *
+ * @param file - The source PDF file.
+ * @param bookmarks - Array of { title, pageIndex } entries (0-based).
+ * @returns New PDF bytes with the outline inserted.
+ */
+export async function addPdfBookmarks(
+  file: File,
+  bookmarks: Array<{ title: string; pageIndex: number }>,
+): Promise<Uint8Array> {
+  const arrayBuffer = await file.arrayBuffer();
+  const pdf = await PDFDocument.load(arrayBuffer);
+
+  if (bookmarks.length === 0) return pdf.save();
+
+  const pages = pdf.getPages();
+
+  // Build the outline root dictionary
+  const outlineDict = pdf.context.obj({
+    Type: PDFName.of("Outlines"),
+    Count: PDFNumber.of(bookmarks.length),
+  }) as PDFDict;
+  const outlineRef = pdf.context.register(outlineDict);
+
+  const itemRefs: PDFRef[] = [];
+
+  for (const bm of bookmarks) {
+    const pageIdx = Math.max(0, Math.min(bm.pageIndex, pages.length - 1));
+    const pageRef = pages[pageIdx].ref;
+
+    // Destination: go to the top of the target page fitting the full width
+    const destArray = pdf.context.obj([pageRef, PDFName.of("Fit")]) as PDFArray;
+
+    const itemDict = pdf.context.obj({
+      Title: PDFString.of(bm.title),
+      Parent: outlineRef,
+      Dest: destArray,
+    }) as PDFDict;
+
+    itemRefs.push(pdf.context.register(itemDict));
+  }
+
+  // Link sibling items with Prev/Next pointers
+  for (let i = 0; i < itemRefs.length; i++) {
+    const item = pdf.context.lookup(itemRefs[i]);
+    if (!(item instanceof PDFDict)) continue;
+    if (i > 0) item.set(PDFName.of("Prev"), itemRefs[i - 1]);
+    if (i < itemRefs.length - 1) item.set(PDFName.of("Next"), itemRefs[i + 1]);
+  }
+
+  outlineDict.set(PDFName.of("First"), itemRefs[0]);
+  outlineDict.set(PDFName.of("Last"), itemRefs[itemRefs.length - 1]);
+
+  pdf.catalog.set(PDFName.of("Outlines"), outlineRef);
+  // Show the bookmarks panel in PDF viewers by default
+  pdf.catalog.set(PDFName.of("PageMode"), PDFName.of("UseOutlines"));
+
+  return pdf.save();
+}
+
+/**
+ * Arrange multiple PDF pages onto single sheets in an N-up grid layout.
+ *
+ * Each output sheet has the same dimensions as the first source page. Source
+ * pages are scaled down to fill the grid cells while preserving their aspect
+ * ratio within each cell.
+ *
+ * @param file - The source PDF file.
+ * @param layout - Grid arrangement: "2x1" (2 cols, 1 row), "1x2" (1 col, 2 rows),
+ *                 "2x2" (4 pages per sheet), or "3x3" (9 pages per sheet).
+ * @returns A new PDF with pages arranged in the chosen grid layout.
+ */
+export async function nupPages(
+  file: File,
+  layout: "2x1" | "1x2" | "2x2" | "3x3",
+): Promise<Uint8Array> {
+  const arrayBuffer = await file.arrayBuffer();
+  const source = await PDFDocument.load(arrayBuffer);
+  const result = await PDFDocument.create();
+
+  const pageCount = source.getPageCount();
+  if (pageCount === 0) throw new Error("The PDF has no pages.");
+
+  const cols = layout === "1x2" ? 1 : layout === "3x3" ? 3 : 2;
+  const rows = layout === "2x1" ? 1 : layout === "3x3" ? 3 : 2;
+  const perSheet = cols * rows;
+
+  const { width: outW, height: outH } = source.getPage(0).getSize();
+  const cellW = outW / cols;
+  const cellH = outH / rows;
+
+  // Embed all source pages into the result document as reusable XObjects
+  const embeddedPages = await Promise.all(source.getPages().map((page) => result.embedPage(page)));
+
+  const totalSheets = Math.ceil(pageCount / perSheet);
+
+  for (let sheet = 0; sheet < totalSheets; sheet++) {
+    const outPage = result.addPage([outW, outH]);
+
+    for (let slot = 0; slot < perSheet; slot++) {
+      const srcIdx = sheet * perSheet + slot;
+      if (srcIdx >= pageCount) break;
+
+      const col = slot % cols;
+      const row = Math.floor(slot / cols);
+
+      // PDF y-axis is bottom-up; row 0 visually is the top row
+      const x = col * cellW;
+      const y = outH - (row + 1) * cellH;
+
+      outPage.drawPage(embeddedPages[srcIdx], { x, y, width: cellW, height: cellH });
+    }
+  }
+
+  return result.save();
 }

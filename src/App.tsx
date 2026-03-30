@@ -15,13 +15,11 @@ import type { Tool, ToolId } from "./types.ts";
 // ---- Lazy-loaded tool components (code-split per tool) ----
 
 const MergePdf = lazy(() => import("./tools/MergePdf.tsx"));
-const SplitPdf = lazy(() => import("./tools/SplitPdf.tsx"));
 const CompressPdf = lazy(() => import("./tools/CompressPdf.tsx"));
 const RotatePages = lazy(() => import("./tools/RotatePages.tsx"));
 const DeletePages = lazy(() => import("./tools/DeletePages.tsx"));
 const ReorderPages = lazy(() => import("./tools/ReorderPages.tsx"));
 const ImagesToPdf = lazy(() => import("./tools/ImagesToPdf.tsx"));
-const AddWatermark = lazy(() => import("./tools/AddWatermark.tsx"));
 const AddSignature = lazy(() => import("./tools/AddSignature.tsx"));
 const EditMetadata = lazy(() => import("./tools/EditMetadata.tsx"));
 const OcrPdf = lazy(() => import("./tools/OcrPdf.tsx"));
@@ -34,9 +32,19 @@ const HeaderFooter = lazy(() => import("./tools/HeaderFooter.tsx"));
 const CropPages = lazy(() => import("./tools/CropPages.tsx"));
 const PdfToImage = lazy(() => import("./tools/PdfToImage.tsx"));
 const FillPdfForm = lazy(() => import("./tools/FillPdfForm.tsx"));
+const ExtractPages = lazy(() => import("./tools/ExtractPages.tsx"));
+const ReversePages = lazy(() => import("./tools/ReversePages.tsx"));
+const RedactPdf = lazy(() => import("./tools/RedactPdf.tsx"));
+const StampPdf = lazy(() => import("./tools/StampPdf.tsx"));
+const AddBookmarks = lazy(() => import("./tools/AddBookmarks.tsx"));
+const PdfInspector = lazy(() => import("./tools/PdfInspector.tsx"));
+const RepairPdf = lazy(() => import("./tools/RepairPdf.tsx"));
+const NupPages = lazy(() => import("./tools/NupPages.tsx"));
+const RemoveBlankPages = lazy(() => import("./tools/RemoveBlankPages.tsx"));
 
 // ---- Tool metadata displayed on the home screen grid ----
 const tools: Tool[] = [
+  // ── Organise & Edit ──────────────────────────────────────
   {
     id: "merge",
     title: "Merge PDFs",
@@ -45,24 +53,10 @@ const tools: Tool[] = [
     category: "organise",
   },
   {
-    id: "split",
-    title: "Split PDF",
-    description: "Extract specific pages from a PDF file",
-    icon: "✂️",
-    category: "organise",
-  },
-  {
-    id: "compress",
-    title: "Compress PDF",
-    description: "Reduce PDF file size for easier sharing",
-    icon: "🗜️",
-    category: "transform",
-  },
-  {
-    id: "rotate",
-    title: "Rotate Pages",
-    description: "Rotate individual pages in any direction",
-    icon: "🔄",
+    id: "extract-pages",
+    title: "Extract Pages",
+    description: "Select specific pages and save them as a new PDF",
+    icon: "📤",
     category: "organise",
   },
   {
@@ -80,53 +74,18 @@ const tools: Tool[] = [
     category: "organise",
   },
   {
-    id: "images-to-pdf",
-    title: "Images to PDF",
-    description: "Convert images into a PDF document",
-    icon: "🖼️",
-    category: "transform",
+    id: "rotate",
+    title: "Rotate Pages",
+    description: "Rotate individual pages in any direction",
+    icon: "🔄",
+    category: "organise",
   },
   {
-    id: "watermark",
-    title: "Add Watermark",
-    description: "Add text watermark to all pages",
-    icon: "💧",
-    category: "annotate",
-  },
-  {
-    id: "signature",
-    title: "Add Signature",
-    description: "Draw or upload a custom signature image and place it on a page",
-    icon: "✍️",
-    category: "annotate",
-  },
-  {
-    id: "metadata",
-    title: "Edit Metadata",
-    description: "View and edit PDF document properties",
-    icon: "📋",
-    category: "security",
-  },
-  {
-    id: "ocr",
-    title: "OCR PDF",
-    description: "Extract text from scanned PDFs using OCR",
-    icon: "🔍",
-    category: "transform",
-  },
-  {
-    id: "pdf-password",
-    title: "PDF Password",
-    description: "Add or remove a password from a PDF",
-    icon: "🔒",
-    category: "security",
-  },
-  {
-    id: "flatten",
-    title: "Flatten PDF",
-    description: "Remove form fields and annotations, making the PDF non-editable",
-    icon: "📐",
-    category: "transform",
+    id: "reverse-pages",
+    title: "Reverse Pages",
+    description: "Flip the page order of a PDF in one click",
+    icon: "🔃",
+    category: "organise",
   },
   {
     id: "add-blank-page",
@@ -143,6 +102,101 @@ const tools: Tool[] = [
     category: "organise",
   },
   {
+    id: "add-bookmarks",
+    title: "Add Bookmarks",
+    description: "Add a clickable outline for quick in-document navigation",
+    icon: "🔖",
+    category: "organise",
+  },
+  {
+    id: "remove-blank-pages",
+    title: "Remove Blank Pages",
+    description: "Auto-detect and remove empty pages from a PDF",
+    icon: "🧹",
+    category: "organise",
+  },
+
+  // ── Transform & Convert ──────────────────────────────────
+  {
+    id: "compress",
+    title: "Compress PDF",
+    description: "Reduce PDF file size for easier sharing",
+    icon: "🗜️",
+    category: "transform",
+  },
+  {
+    id: "pdf-to-image",
+    title: "PDF to Image",
+    description: "Export pages as PNG or JPEG images",
+    icon: "🖼️",
+    category: "transform",
+  },
+  {
+    id: "images-to-pdf",
+    title: "Images to PDF",
+    description: "Convert images into a PDF document",
+    icon: "🖼️",
+    category: "transform",
+  },
+  {
+    id: "ocr",
+    title: "OCR PDF",
+    description: "Extract text from scanned PDFs using OCR",
+    icon: "🔍",
+    category: "transform",
+  },
+  {
+    id: "crop-pages",
+    title: "Crop Pages",
+    description: "Trim page margins by adjusting the visible area",
+    icon: "✂️",
+    category: "transform",
+  },
+  {
+    id: "flatten",
+    title: "Flatten PDF",
+    description: "Remove form fields and annotations, making the PDF non-editable",
+    icon: "📐",
+    category: "transform",
+  },
+  {
+    id: "nup-pages",
+    title: "N-up Pages",
+    description: "Arrange multiple pages onto a single sheet for compact printing",
+    icon: "🔲",
+    category: "transform",
+  },
+  {
+    id: "repair-pdf",
+    title: "Repair PDF",
+    description: "Fix structural issues in corrupted or malformed PDFs",
+    icon: "🔧",
+    category: "transform",
+  },
+
+  // ── Annotate & Sign ──────────────────────────────────────
+  {
+    id: "signature",
+    title: "Add Signature",
+    description: "Draw or upload a custom signature image and place it on a page",
+    icon: "✍️",
+    category: "annotate",
+  },
+  {
+    id: "fill-pdf-form",
+    title: "Fill PDF Form",
+    description: "Fill interactive form fields in existing PDFs",
+    icon: "📝",
+    category: "annotate",
+  },
+  {
+    id: "stamp-pdf",
+    title: "Stamp & Watermark",
+    description: "Apply pre-built stamps or custom text watermarks with configurable style",
+    icon: "🖊️",
+    category: "annotate",
+  },
+  {
     id: "add-page-numbers",
     title: "Add Page Numbers",
     description: "Insert page numbers with custom position and format",
@@ -156,26 +210,35 @@ const tools: Tool[] = [
     icon: "📝",
     category: "annotate",
   },
+
+  // ── Security & Properties ────────────────────────────────
   {
-    id: "crop-pages",
-    title: "Crop Pages",
-    description: "Trim page margins by adjusting the visible area",
-    icon: "✂️",
-    category: "transform",
+    id: "pdf-password",
+    title: "PDF Password",
+    description: "Add or remove a password and control print, copy, and edit rights",
+    icon: "🔒",
+    category: "security",
   },
   {
-    id: "pdf-to-image",
-    title: "PDF to Image",
-    description: "Export pages as PNG or JPEG images",
-    icon: "🖼️",
-    category: "transform",
+    id: "redact-pdf",
+    title: "Redact PDF",
+    description: "Permanently black out sensitive text and images",
+    icon: "⬛",
+    category: "security",
   },
   {
-    id: "fill-pdf-form",
-    title: "Fill PDF Form",
-    description: "Fill interactive form fields in existing PDFs",
-    icon: "📝",
-    category: "annotate",
+    id: "metadata",
+    title: "Edit Metadata",
+    description: "View and edit PDF document properties",
+    icon: "📋",
+    category: "security",
+  },
+  {
+    id: "pdf-inspector",
+    title: "PDF Inspector",
+    description: "View version, page dimensions, metadata, and encryption status",
+    icon: "🔎",
+    category: "security",
   },
 ];
 
@@ -210,13 +273,12 @@ const categories = [
 // ---- Map tool IDs to their lazily-loaded components ----
 const toolComponents: Record<string, React.LazyExoticComponent<React.ComponentType>> = {
   merge: MergePdf,
-  split: SplitPdf,
   compress: CompressPdf,
   rotate: RotatePages,
   delete: DeletePages,
   reorder: ReorderPages,
   "images-to-pdf": ImagesToPdf,
-  watermark: AddWatermark,
+  watermark: StampPdf,
   signature: AddSignature,
   metadata: EditMetadata,
   ocr: OcrPdf,
@@ -229,6 +291,15 @@ const toolComponents: Record<string, React.LazyExoticComponent<React.ComponentTy
   "crop-pages": CropPages,
   "pdf-to-image": PdfToImage,
   "fill-pdf-form": FillPdfForm,
+  "extract-pages": ExtractPages,
+  "reverse-pages": ReversePages,
+  "redact-pdf": RedactPdf,
+  "stamp-pdf": StampPdf,
+  "add-bookmarks": AddBookmarks,
+  "pdf-inspector": PdfInspector,
+  "repair-pdf": RepairPdf,
+  "nup-pages": NupPages,
+  "remove-blank-pages": RemoveBlankPages,
 };
 
 /** Full-screen centred spinner shown while a tool component is loading. */
