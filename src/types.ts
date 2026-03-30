@@ -99,7 +99,6 @@ export interface CropMargins {
 /** Union of all valid tool identifiers. */
 export type ToolId =
   | "merge"
-  | "split"
   | "compress"
   | "rotate"
   | "delete"

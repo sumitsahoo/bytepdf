@@ -1,8 +1,10 @@
 /**
  * Extract Pages tool.
  *
- * Displays page thumbnails in a grid. The user checks the pages they want to
- * keep and downloads a new PDF containing only those pages in the order selected.
+ * Displays page thumbnails in a grid. The user can click individual pages to
+ * select them, use Select All / Clear shortcuts, or type a range string
+ * (e.g. "1-3, 5, 7-9") to specify pages by number. The selected pages are
+ * written to a new PDF and downloaded.
  */
 
 import { useState, useCallback } from "react";
@@ -12,10 +14,28 @@ import { extractPages } from "../utils/pdf-operations.ts";
 import { renderAllThumbnails } from "../utils/pdf-renderer.ts";
 import { downloadPdf } from "../utils/file-helpers.ts";
 
+/** Parse a range string like "1-3, 5, 7-9" into sorted, unique 0-based page indices. */
+function parseRangeInput(input: string, pageCount: number): number[] {
+  const seen = new Set<number>();
+  for (const part of input.split(",").map((s) => s.trim())) {
+    const sides = part.split("-").map((s) => Number.parseInt(s.trim(), 10));
+    if (sides.length === 2 && !Number.isNaN(sides[0]) && !Number.isNaN(sides[1])) {
+      for (let i = sides[0]; i <= sides[1]; i++) {
+        if (i >= 1 && i <= pageCount) seen.add(i - 1);
+      }
+    } else if (sides.length === 1 && !Number.isNaN(sides[0])) {
+      const p = sides[0];
+      if (p >= 1 && p <= pageCount) seen.add(p - 1);
+    }
+  }
+  return [...seen].sort((a, b) => a - b);
+}
+
 export default function ExtractPages() {
   const [file, setFile] = useState<File | null>(null);
   const [thumbnails, setThumbnails] = useState<string[]>([]);
   const [selectedPages, setSelectedPages] = useState<Set<number>>(new Set());
+  const [rangeInput, setRangeInput] = useState("");
   const [processing, setProcessing] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -25,6 +45,7 @@ export default function ExtractPages() {
     if (!pdf) return;
     setFile(pdf);
     setSelectedPages(new Set());
+    setRangeInput("");
     setLoading(true);
     setError(null);
     try {
@@ -60,11 +81,18 @@ export default function ExtractPages() {
   }, []);
 
   const handleExtract = useCallback(async () => {
-    if (!file || selectedPages.size === 0) return;
+    if (!file) return;
+
+    // Range input takes priority over thumbnail clicks when filled
+    const indices = rangeInput.trim()
+      ? parseRangeInput(rangeInput, thumbnails.length)
+      : [...selectedPages].sort((a, b) => a - b);
+
+    if (indices.length === 0) return;
+
     setProcessing(true);
     setError(null);
     try {
-      const indices = [...selectedPages].sort((a, b) => a - b);
       const result = await extractPages(file, indices);
       const baseName = file.name.replace(/\.pdf$/i, "");
       downloadPdf(result, `${baseName}_extracted.pdf`);
@@ -73,7 +101,14 @@ export default function ExtractPages() {
     } finally {
       setProcessing(false);
     }
-  }, [file, selectedPages]);
+  }, [file, selectedPages, rangeInput, thumbnails.length]);
+
+  const hasSelection = rangeInput.trim().length > 0 || selectedPages.size > 0;
+
+  // Effective selection count shown in the button label
+  const effectiveCount = rangeInput.trim()
+    ? parseRangeInput(rangeInput, thumbnails.length).length
+    : selectedPages.size;
 
   return (
     <div className="space-y-6">
@@ -89,7 +124,7 @@ export default function ExtractPages() {
           <div className="flex items-center justify-between flex-wrap gap-2">
             <p className="text-sm text-slate-600 dark:text-dark-text-muted">
               <span className="font-medium">{file.name}</span> — {thumbnails.length} pages
-              {selectedPages.size > 0 && (
+              {selectedPages.size > 0 && !rangeInput.trim() && (
                 <span className="text-primary-600 dark:text-primary-400 ml-2">
                   ({selectedPages.size} selected)
                 </span>
@@ -113,12 +148,33 @@ export default function ExtractPages() {
                   setFile(null);
                   setThumbnails([]);
                   setSelectedPages(new Set());
+                  setRangeInput("");
                 }}
                 className="text-sm text-primary-600 hover:text-primary-700"
               >
                 Change file
               </button>
             </div>
+          </div>
+
+          <div>
+            <label
+              htmlFor="range-input"
+              className="block text-sm font-medium text-slate-700 dark:text-dark-text mb-1.5"
+            >
+              Page range (optional)
+            </label>
+            <input
+              id="range-input"
+              type="text"
+              value={rangeInput}
+              onChange={(e) => setRangeInput(e.target.value)}
+              placeholder="e.g., 1-3, 5, 7-9"
+              className="w-full px-3 py-2 border border-slate-300 dark:border-dark-border dark:bg-dark-surface dark:text-dark-text rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+            />
+            <p className="text-xs text-slate-400 dark:text-dark-text-muted mt-1">
+              Or click pages below to select them
+            </p>
           </div>
 
           {loading ? (
@@ -160,7 +216,7 @@ export default function ExtractPages() {
             </div>
           )}
 
-          {selectedPages.size > 0 && (
+          {hasSelection && effectiveCount > 0 && (
             <button
               onClick={handleExtract}
               disabled={processing}
@@ -168,7 +224,7 @@ export default function ExtractPages() {
             >
               {processing
                 ? "Extracting..."
-                : `Extract ${selectedPages.size} Page${selectedPages.size > 1 ? "s" : ""} & Download`}
+                : `Extract ${effectiveCount} Page${effectiveCount !== 1 ? "s" : ""} & Download`}
             </button>
           )}
         </>

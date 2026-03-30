@@ -15,7 +15,6 @@ import type { Tool, ToolId } from "./types.ts";
 // ---- Lazy-loaded tool components (code-split per tool) ----
 
 const MergePdf = lazy(() => import("./tools/MergePdf.tsx"));
-const SplitPdf = lazy(() => import("./tools/SplitPdf.tsx"));
 const CompressPdf = lazy(() => import("./tools/CompressPdf.tsx"));
 const RotatePages = lazy(() => import("./tools/RotatePages.tsx"));
 const DeletePages = lazy(() => import("./tools/DeletePages.tsx"));
@@ -52,13 +51,6 @@ const tools: Tool[] = [
     title: "Merge PDFs",
     description: "Combine multiple PDF files into one document",
     icon: "📑",
-    category: "organise",
-  },
-  {
-    id: "split",
-    title: "Split PDF",
-    description: "Extract specific pages from a PDF file",
-    icon: "✂️",
     category: "organise",
   },
   {
@@ -290,7 +282,6 @@ const categories = [
 // ---- Map tool IDs to their lazily-loaded components ----
 const toolComponents: Record<string, React.LazyExoticComponent<React.ComponentType>> = {
   merge: MergePdf,
-  split: SplitPdf,
   compress: CompressPdf,
   rotate: RotatePages,
   delete: DeletePages,
