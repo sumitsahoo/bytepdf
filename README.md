@@ -19,24 +19,25 @@
 
 ## ✨ Features
 
-BytePDF offers **28 powerful PDF tools**, all running 100% client-side:
+BytePDF offers **30 powerful PDF tools**, all running 100% client-side:
 
 ### 📄 Organise & Edit
 
 _Rearrange, combine, and manage your PDF pages_
 
-| Tool                  | Description                                                                        |
-| --------------------- | ---------------------------------------------------------------------------------- |
-| 📑 **Merge PDFs**     | Combine multiple PDF files into a single document with drag-to-reorder support     |
-| ✂️ **Split PDF**      | Extract specific pages or page ranges (e.g., `1-3, 5, 7-9`) with visual thumbnails |
-| 🔄 **Rotate Pages**   | Rotate individual pages by 90°, -90°, or 180° — or rotate all at once              |
-| 🗑️ **Delete Pages**   | Select and remove unwanted pages visually                                          |
-| ↕️ **Reorder Pages**  | Drag and drop to rearrange page order with smooth animations                       |
-| 📄 **Add Blank Page** | Insert a blank page at any position — dimensions match the adjacent page           |
-| 📋 **Duplicate Page** | Copy any page and insert it at a chosen position in the document                   |
-| 📤 **Extract Pages**  | Select specific pages and save them as a new standalone PDF                        |
-| 🔃 **Reverse Pages**  | Flip the entire page order of a PDF in one click                                   |
-| 🔖 **Add Bookmarks**  | Add a clickable outline so readers can jump to any page instantly                  |
+| Tool                      | Description                                                                        |
+| ------------------------- | ---------------------------------------------------------------------------------- |
+| 📑 **Merge PDFs**         | Combine multiple PDF files into a single document with drag-to-reorder support     |
+| ✂️ **Split PDF**          | Extract specific pages or page ranges (e.g., `1-3, 5, 7-9`) with visual thumbnails |
+| 🔄 **Rotate Pages**       | Rotate individual pages by 90°, -90°, or 180° — or rotate all at once              |
+| 🗑️ **Delete Pages**       | Select and remove unwanted pages visually                                          |
+| ↕️ **Reorder Pages**      | Drag and drop to rearrange page order with smooth animations                       |
+| 📄 **Add Blank Page**     | Insert a blank page at any position — dimensions match the adjacent page           |
+| 📋 **Duplicate Page**     | Copy any page and insert it at a chosen position in the document                   |
+| 📤 **Extract Pages**      | Select specific pages and save them as a new standalone PDF                        |
+| 🔃 **Reverse Pages**      | Flip the entire page order of a PDF in one click                                   |
+| 🔖 **Add Bookmarks**      | Add a clickable outline so readers can jump to any page instantly                  |
+| 🧹 **Remove Blank Pages** | Auto-detect and remove empty pages — adjustable sensitivity with manual override   |
 
 ### 🔄 Transform & Convert
 
@@ -51,6 +52,7 @@ _Compress, convert, and extract content_
 | ✂️ **Crop Pages**    | Trim page margins by setting a crop box (mm input, uniform or per-side); also removes existing crop boxes to restore the full page |
 | 🖼️ **PDF to Image**  | Export pages as PNG or JPEG at 72 / 150 / 300 DPI — single file or ZIP                                                             |
 | 🔧 **Repair PDF**    | Fix structural issues in corrupted or malformed PDFs by re-parsing and rebuilding the file                                         |
+| 🔲 **N-up Pages**    | Arrange multiple pages onto a single sheet (2-up, 4-up, 9-up) for compact printing                                                 |
 
 ### ✏️ Annotate & Sign
 

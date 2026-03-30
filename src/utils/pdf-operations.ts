@@ -1432,3 +1432,60 @@ export async function addPdfBookmarks(
 
   return pdf.save();
 }
+
+/**
+ * Arrange multiple PDF pages onto single sheets in an N-up grid layout.
+ *
+ * Each output sheet has the same dimensions as the first source page. Source
+ * pages are scaled down to fill the grid cells while preserving their aspect
+ * ratio within each cell.
+ *
+ * @param file - The source PDF file.
+ * @param layout - Grid arrangement: "2x1" (2 cols, 1 row), "1x2" (1 col, 2 rows),
+ *                 "2x2" (4 pages per sheet), or "3x3" (9 pages per sheet).
+ * @returns A new PDF with pages arranged in the chosen grid layout.
+ */
+export async function nupPages(
+  file: File,
+  layout: "2x1" | "1x2" | "2x2" | "3x3",
+): Promise<Uint8Array> {
+  const arrayBuffer = await file.arrayBuffer();
+  const source = await PDFDocument.load(arrayBuffer);
+  const result = await PDFDocument.create();
+
+  const pageCount = source.getPageCount();
+  if (pageCount === 0) throw new Error("The PDF has no pages.");
+
+  const cols = layout === "1x2" ? 1 : layout === "3x3" ? 3 : 2;
+  const rows = layout === "2x1" ? 1 : layout === "3x3" ? 3 : 2;
+  const perSheet = cols * rows;
+
+  const { width: outW, height: outH } = source.getPage(0).getSize();
+  const cellW = outW / cols;
+  const cellH = outH / rows;
+
+  // Embed all source pages into the result document as reusable XObjects
+  const embeddedPages = await Promise.all(source.getPages().map((page) => result.embedPage(page)));
+
+  const totalSheets = Math.ceil(pageCount / perSheet);
+
+  for (let sheet = 0; sheet < totalSheets; sheet++) {
+    const outPage = result.addPage([outW, outH]);
+
+    for (let slot = 0; slot < perSheet; slot++) {
+      const srcIdx = sheet * perSheet + slot;
+      if (srcIdx >= pageCount) break;
+
+      const col = slot % cols;
+      const row = Math.floor(slot / cols);
+
+      // PDF y-axis is bottom-up; row 0 visually is the top row
+      const x = col * cellW;
+      const y = outH - (row + 1) * cellH;
+
+      outPage.drawPage(embeddedPages[srcIdx], { x, y, width: cellW, height: cellH });
+    }
+  }
+
+  return result.save();
+}

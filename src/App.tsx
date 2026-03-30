@@ -42,6 +42,8 @@ const AddBookmarks = lazy(() => import("./tools/AddBookmarks.tsx"));
 const PdfInspector = lazy(() => import("./tools/PdfInspector.tsx"));
 const RepairPdf = lazy(() => import("./tools/RepairPdf.tsx"));
 const PdfPermissions = lazy(() => import("./tools/PdfPermissions.tsx"));
+const NupPages = lazy(() => import("./tools/NupPages.tsx"));
+const RemoveBlankPages = lazy(() => import("./tools/RemoveBlankPages.tsx"));
 
 // ---- Tool metadata displayed on the home screen grid ----
 const tools: Tool[] = [
@@ -241,6 +243,20 @@ const tools: Tool[] = [
     icon: "🛡️",
     category: "security",
   },
+  {
+    id: "nup-pages",
+    title: "N-up Pages",
+    description: "Arrange multiple pages onto a single sheet for compact printing",
+    icon: "🔲",
+    category: "transform",
+  },
+  {
+    id: "remove-blank-pages",
+    title: "Remove Blank Pages",
+    description: "Auto-detect and remove empty pages from a PDF",
+    icon: "🧹",
+    category: "organise",
+  },
 ];
 
 // ---- Category definitions for the home screen ----
@@ -301,6 +317,8 @@ const toolComponents: Record<string, React.LazyExoticComponent<React.ComponentTy
   "pdf-inspector": PdfInspector,
   "repair-pdf": RepairPdf,
   "pdf-permissions": PdfPermissions,
+  "nup-pages": NupPages,
+  "remove-blank-pages": RemoveBlankPages,
 };
 
 /** Full-screen centred spinner shown while a tool component is loading. */

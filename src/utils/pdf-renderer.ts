@@ -163,3 +163,59 @@ export async function renderAllThumbnails(file: File, scale = 0.4): Promise<stri
   void pdf.destroy();
   return thumbnails;
 }
+
+/**
+ * Render every page of a PDF and return both thumbnails and per-page whiteness scores.
+ *
+ * Each whiteness score is the fraction of pixels (0–1) whose R, G, and B channels
+ * are all ≥ 240. A score near 1.0 indicates a near-blank (white) page.
+ * Both arrays are in page order and have the same length.
+ *
+ * @param file - The PDF file to analyse.
+ * @param scale - Render scale factor (default 0.3 — small size is enough for detection).
+ * @returns `{ thumbnails, scores }` where thumbnails are PNG data-URLs and scores are 0–1.
+ */
+export async function renderThumbnailsAndScores(
+  file: File,
+  scale = 0.3,
+): Promise<{ thumbnails: string[]; scores: number[] }> {
+  const arrayBuffer = await file.arrayBuffer();
+  const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+  const thumbnails: string[] = [];
+  const scores: number[] = [];
+
+  for (let i = 1; i <= pdf.numPages; i++) {
+    const page = await pdf.getPage(i);
+    const viewport = page.getViewport({ scale });
+
+    const canvas = document.createElement("canvas");
+    canvas.width = viewport.width;
+    canvas.height = viewport.height;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) {
+      thumbnails.push("");
+      scores.push(0);
+      canvas.width = 0;
+      canvas.height = 0;
+      continue;
+    }
+
+    await page.render({ canvasContext: ctx, viewport, canvas }).promise;
+    thumbnails.push(canvas.toDataURL("image/png"));
+
+    // Count pixels where all channels are near-white (≥ 240)
+    const { data } = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    let nearWhite = 0;
+    const totalPixels = canvas.width * canvas.height;
+    for (let p = 0; p < data.length; p += 4) {
+      if (data[p] >= 240 && data[p + 1] >= 240 && data[p + 2] >= 240) nearWhite++;
+    }
+    scores.push(totalPixels > 0 ? nearWhite / totalPixels : 0);
+
+    canvas.width = 0;
+    canvas.height = 0;
+  }
+
+  void pdf.destroy();
+  return { thumbnails, scores };
+}
