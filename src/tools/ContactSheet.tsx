@@ -309,6 +309,91 @@ export default function ContactSheet() {
             </div>
           </div>
 
+          {/* Layout Preview */}
+          {pageCount > 0 && !processing && (
+            <div>
+              <p className="text-sm font-medium text-slate-700 dark:text-dark-text mb-2">
+                Layout Preview
+                <span className="text-xs font-normal text-slate-400 dark:text-dark-text-muted ml-2">
+                  Sheet 1 of {sheetsNeeded}
+                </span>
+              </p>
+              <div className="flex justify-center">
+                <div
+                  className="bg-white dark:bg-dark-surface-alt border border-slate-200 dark:border-dark-border rounded-lg shadow-sm overflow-hidden"
+                  style={{ width: 240, height: 340 }}
+                >
+                  <div
+                    className="w-full h-full p-2"
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: `repeat(${cols}, 1fr)`,
+                      gridTemplateRows: `repeat(${cols}, 1fr)`,
+                      gap: "4px",
+                    }}
+                  >
+                    {Array.from({ length: cols * cols }).map((_, idx) => {
+                      const isOccupied = idx < pageCount;
+                      return (
+                        <div
+                          key={idx}
+                          className={`rounded flex flex-col items-center justify-center transition-colors ${
+                            isOccupied
+                              ? "bg-primary-50 dark:bg-primary-900/30 border border-primary-200 dark:border-primary-800"
+                              : "border border-dashed border-slate-200 dark:border-dark-border"
+                          }`}
+                        >
+                          {isOccupied ? (
+                            <>
+                              <svg
+                                className="text-primary-400 dark:text-primary-500"
+                                style={{
+                                  width: cols <= 3 ? 20 : cols <= 4 ? 14 : 10,
+                                  height: cols <= 3 ? 20 : cols <= 4 ? 14 : 10,
+                                }}
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth={1.5}
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"
+                                />
+                              </svg>
+                              {showLabels && cols <= 4 && (
+                                <span
+                                  className="text-primary-500 dark:text-primary-400 font-medium leading-none mt-0.5"
+                                  style={{ fontSize: cols <= 3 ? 9 : 7 }}
+                                >
+                                  {idx + 1}
+                                </span>
+                              )}
+                            </>
+                          ) : (
+                            <span
+                              className="text-slate-300 dark:text-dark-border"
+                              style={{ fontSize: cols <= 3 ? 10 : 7 }}
+                            >
+                              —
+                            </span>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+              {sheetsNeeded > 1 && (
+                <p className="text-xs text-center text-slate-400 dark:text-dark-text-muted mt-2">
+                  {pageCount - cols * cols} more {pageCount - cols * cols === 1 ? "page" : "pages"}{" "}
+                  on {sheetsNeeded - 1} additional {sheetsNeeded - 1 === 1 ? "sheet" : "sheets"}
+                </p>
+              )}
+            </div>
+          )}
+
           {/* Progress */}
           {processing && progress && (
             <div className="space-y-2">
