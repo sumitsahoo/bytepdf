@@ -9,6 +9,7 @@
 import { useCallback, useState } from "react";
 import { FileDropZone } from "../components/FileDropZone.tsx";
 import { downloadPdf, formatFileSize } from "../utils/file-helpers.ts";
+import { useSortableDrag } from "../hooks/useSortableDrag.ts";
 import { duplicatePages } from "../utils/pdf-operations.ts";
 import { renderAllThumbnails } from "../utils/pdf-renderer.ts";
 
@@ -29,9 +30,19 @@ export default function DuplicatePage() {
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Drag state
-  const [dragIndex, setDragIndex] = useState<number | null>(null);
-  const [dragOverSlot, setDragOverSlot] = useState<number | null>(null);
+  const handleMove = useCallback((fromIndex: number, toSlot: number) => {
+    setItems((prev) => {
+      const next = [...prev];
+      const [moved] = next.splice(fromIndex, 1);
+      const adjustedSlot = fromIndex < toSlot ? toSlot - 1 : toSlot;
+      next.splice(adjustedSlot, 0, moved);
+      return next;
+    });
+  }, []);
+
+  // Drag state (desktop + mobile touch)
+  const { dragIndex, dragOverSlot, setDragIndex, setDragOverSlot, getTouchHandlers } =
+    useSortableDrag(handleMove);
 
   const handleFile = useCallback(async (files: File[]) => {
     const pdf = files[0];
@@ -70,7 +81,7 @@ export default function DuplicatePage() {
     setItems((prev) => prev.filter((it) => it.type === "original"));
     setDragIndex(null);
     setDragOverSlot(null);
-  }, []);
+  }, [setDragIndex, setDragOverSlot]);
 
   const handleApply = useCallback(async () => {
     if (!file || !hasCopies) return;
@@ -107,6 +118,7 @@ export default function DuplicatePage() {
       elements.push(
         <div
           key={`drop-${slot}`}
+          data-drop-slot={slot}
           onDragOver={(e) => {
             if (isAdjacentToDrag) return;
             e.preventDefault();
@@ -169,6 +181,7 @@ export default function DuplicatePage() {
                 setDragIndex(null);
                 setDragOverSlot(null);
               }}
+              {...getTouchHandlers(slot)}
               className={`shrink-0 p-2 flex flex-col items-center gap-1.5 cursor-grab active:cursor-grabbing select-none transition-all duration-200 ${
                 isSource ? "scale-95 opacity-30" : "scale-100 opacity-100"
               }`}
@@ -219,6 +232,7 @@ export default function DuplicatePage() {
                 setDragIndex(null);
                 setDragOverSlot(null);
               }}
+              {...(hasCopies ? getTouchHandlers(slot) : {})}
               className={`shrink-0 p-2 flex flex-col items-center gap-1.5 select-none transition-all duration-200 cursor-pointer ${
                 hasCopies ? "active:cursor-grabbing" : "hover:scale-105"
               } ${isSource ? "scale-95 opacity-30" : "scale-100 opacity-100"}`}
