@@ -58,8 +58,12 @@ export default function DuplicatePage() {
   const hasCopies = items.some((it) => it.type === "copy");
   const isDragging = dragIndex !== null;
 
-  const handleDuplicatePage = useCallback((pageIndex: number) => {
-    setItems((prev) => [{ type: "copy", sourceIndex: pageIndex, id: nextCopyId() }, ...prev]);
+  const handleDuplicatePage = useCallback((pageIndex: number, afterSlot: number) => {
+    setItems((prev) => {
+      const next = [...prev];
+      next.splice(afterSlot + 1, 0, { type: "copy", sourceIndex: pageIndex, id: nextCopyId() });
+      return next;
+    });
   }, []);
 
   const handleReset = useCallback(() => {
@@ -204,7 +208,7 @@ export default function DuplicatePage() {
               key={`page-${item.index}`}
               draggable={hasCopies}
               onClick={() => {
-                if (!isDragging) handleDuplicatePage(item.index);
+                if (!isDragging) handleDuplicatePage(item.index, slot);
               }}
               onDragStart={(e) => {
                 if (!hasCopies) return;
@@ -261,7 +265,7 @@ export default function DuplicatePage() {
           accept=".pdf,application/pdf"
           onFiles={handleFile}
           label="Drop a PDF file here"
-          hint="Click pages to duplicate them, then drag copies to position them"
+          hint="Click a page to duplicate it right after — drag copies to rearrange"
         />
       ) : (
         <>
@@ -294,8 +298,8 @@ export default function DuplicatePage() {
                     {isDragging
                       ? "Drop at the desired position"
                       : hasCopies
-                        ? "Click a page to add another copy, or drag to rearrange"
-                        : "Click a page to duplicate it"}
+                        ? "Click a page to add another copy — drag to rearrange"
+                        : "Click a page to duplicate it — the copy appears right after"}
                   </p>
                   {hasCopies && (
                     <button
